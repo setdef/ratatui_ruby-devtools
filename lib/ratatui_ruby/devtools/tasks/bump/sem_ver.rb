@@ -24,14 +24,30 @@ class SemVer
   # The valid segment names for version bumping.
   SEGMENTS = [:major, :minor, :patch].freeze
 
+  # Dot-separated prerelease identifiers. Numeric identifiers have no leading
+  # zeroes.
+  PRERELEASE = /\A(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*\z/
+
   # Parses a version string into a SemVer instance.
   #
-  # [string] A version string like <tt>"1.2.3"</tt>.
+  # Raises ArgumentError for a prerelease that isn't SemVer, such as
+  # <tt>"1.0.0.beta.1"</tt> or <tt>"1.0.0-alpha.001"</tt>.
+  #
+  # [string] A version string like <tt>"1.2.3"</tt> or <tt>"1.0.0-rc.1"</tt>.
   def self.parse(string)
     require "rubygems"
     # Extract prerelease suffix (e.g., "-beta.1", "-alpha.2", "-rc.1")
     base, prerelease = string.split("-", 2)
-    segments = Gem::Version.new(base).segments.fill(0, 3).first(3)
+    version = Gem::Version.new(base)
+    if version.prerelease?
+      raise ArgumentError, "#{string} is not SemVer. Put the prerelease after a hyphen, like 1.0.0-beta.1."
+    end
+    if prerelease && !prerelease.match?(PRERELEASE)
+      raise ArgumentError, "#{string} has an invalid prerelease. Use dot-separated letters, digits, and hyphens, " \
+        "with no leading zeroes in numbers, like 1.0.0-alpha.1."
+    end
+
+    segments = (version.segments + [0, 0, 0]).first(3)
     new(segments, prerelease:)
   end
 
@@ -55,12 +71,16 @@ class SemVer
 
   # Returns the next version after bumping the given segment.
   #
-  # Bumping a segment resets all following segments to zero.
+  # Bumping a segment resets all following segments to zero. A prerelease
+  # comes before its release, so bumping it to a segment it already leads up
+  # to releases it: <tt>1.0.0-rc.1</tt> becomes <tt>1.0.0</tt> on any segment,
+  # and <tt>1.2.3-rc.1</tt> becomes <tt>1.2.3</tt> on <tt>:patch</tt>.
   #
   # [segment] One of <tt>:major</tt>, <tt>:minor</tt>, or <tt>:patch</tt>.
   def next(segment)
     index = SEGMENTS.index(segment)
     raise ArgumentError, "Invalid segment: #{segment}" unless index
+    return SemVer.new(@segments) if @prerelease && @segments[(index + 1)..].all?(&:zero?)
 
     new_segments = @segments.dup
     new_segments[index] += 1

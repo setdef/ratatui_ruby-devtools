@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Lockfile Ruby check**: Bundler checks locked gems only against the Ruby that resolves them. A lockfile updated on your newest Ruby could hold gems your oldest supported Ruby can't install, and nothing failed until CI. `rake lint` now catches these gems and prints the `bundle lock` command that relocks them on the oldest Ruby.
+- **Prerelease versions**: `rake bump:exact[1.0.0-rc.1]` sets a SemVer prerelease. Bumping a prerelease releases it when you bump the segment it leads up to, so `rake bump:patch` takes `1.0.0-rc.1` to `1.0.0` instead of skipping to `1.0.1`. A prerelease that isn't valid SemVer, such as `1.0.0-alpha.001`, stops the bump with an error that shows the right form.
 
 ### Changed
 
@@ -23,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Scaffolded `bin/setup`**: Installs the bundle in `vendor/bundle` instead of the shared per-user gem directory, so native gems always match the project's Ruby. Run `scaffold --update` to pick it up.
 
 ### Fixed
+
+- **Short and RubyGems-style versions**: A version like `1.2` crashed `rake bump:patch`. A RubyGems-style prerelease like `1.0.0.beta.1` was read as `1.0.0`, so the next bump skipped past the release. `1.2` now bumps as `1.2.0`, and `1.0.0.beta.1` stops the bump with an error asking for `1.0.0-beta.1`.
 
 ### Removed
 
