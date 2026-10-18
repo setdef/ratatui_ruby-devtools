@@ -29,15 +29,18 @@ class SemVer
   # [string] A version string like <tt>"1.2.3"</tt>.
   def self.parse(string)
     require "rubygems"
-    segments = Gem::Version.new(string).segments.fill(0, 3).first(3)
-    new(segments)
+    # Extract prerelease suffix (e.g., "-beta.1", "-alpha.2", "-rc.1")
+    base, prerelease = string.split("-", 2)
+    segments = Gem::Version.new(base).segments.fill(0, 3).first(3)
+    new(segments, prerelease:)
   end
 
   # Creates a new SemVer from an array of segments.
   #
   # [segments] An array of three integers: <tt>[major, minor, patch]</tt>.
-  def initialize(segments)
+  def initialize(segments, prerelease: nil)
     @segments = segments
+    @prerelease = prerelease
   end
 
   # Returns the next version after bumping the given segment.
@@ -58,6 +61,7 @@ class SemVer
 
   # Returns the version as a string.
   def to_s
-    @segments.join(".")
+    base = @segments.join(".")
+    @prerelease ? "#{base}-#{@prerelease}" : base
   end
 end
