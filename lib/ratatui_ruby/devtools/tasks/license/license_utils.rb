@@ -105,8 +105,19 @@ module LicenseUtils
     # it.
     #
     # [filepath] Path to the file.
-    def contributors(filepath)
-      get_contributors_for_lines(filepath).filter_map do |contributor, year|
+    # [line_ranges] Pairs of first and last line numbers, counting from 1, to
+    #   limit the search to. Omit it to search the whole file.
+    def contributors(filepath, line_ranges = nil)
+      years = if line_ranges
+        line_ranges.each_with_object({}) do |(first, last), merged|
+          get_contributors_for_lines(filepath, first, last).each do |contributor, year|
+            merged[contributor] = [merged[contributor] || 0, year].max
+          end
+        end
+      else
+        get_contributors_for_lines(filepath)
+      end
+      years.filter_map do |contributor, year|
         Contributor.new(name: $1.strip, email: $2.strip, year:) if contributor =~ /^(.+?)\s*<(.+)>$/
       end
     end

@@ -6,10 +6,13 @@
 #++
 
 require_relative "copyright"
+require_relative "directory_licensing"
 require_relative "spdx_header"
 
 # The header sits between #-- and #++ so RDoc leaves it out of the docs.
 class RubyHeaderSyntax # :nodoc:
+  include DirectoryLicensing
+
   FROZEN_STRING_LITERAL = "# frozen_string_literal: true\n"
   # REUSE-IgnoreStart
   COPYRIGHT = /^#\s*SPDX-FileCopyrightText:\s*(\d{4})\s+(.+)$/
@@ -44,7 +47,7 @@ class RubyHeaderSyntax # :nodoc:
     "#{FROZEN_STRING_LITERAL}\n#{block(header)}\n#{lines.join}"
   end
 
-  def replaced(header, lines, body)
+  def replaced(header, lines, end_line)
     frozen = frozen_string_literal_in(lines)
     preamble = if frozen
       "#{frozen}\n"
@@ -53,7 +56,7 @@ class RubyHeaderSyntax # :nodoc:
     else
       "#{FROZEN_STRING_LITERAL}\n"
     end
-    "#{preamble}#{block(header)}\n#{body.join}"
+    "#{preamble}#{block(header)}\n#{after_header(lines, end_line).join}"
   end
 
   private def frozen_string_literal_in(lines)

@@ -6,10 +6,12 @@
 #++
 
 require_relative "license_script"
+require_relative "licensed_file"
+require_relative "markdown_header_syntax"
 
-class MarkdownFiles < Data.define(:paths) # :nodoc:
+class MarkdownFiles < Data.define(:files) # :nodoc:
   def self.changed(repository)
-    new(paths: repository.changed_files.select { |path| path.end_with?(".md") })
+    new(files: LicensedFile.changed(MarkdownHeaderSyntax.new, repository:))
   end
 
   def label
@@ -17,11 +19,11 @@ class MarkdownFiles < Data.define(:paths) # :nodoc:
   end
 
   def count
-    paths.count
+    files.count
   end
 
   def license
-    LicenseScript.new("headers_md.rb").run(paths)
-    LicenseScript.new("snippets_md.rb").run(paths)
+    files.each(&:annotate)
+    LicenseScript.new("snippets_md.rb").run(files.map(&:path))
   end
 end

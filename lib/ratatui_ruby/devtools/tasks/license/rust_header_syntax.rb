@@ -6,9 +6,12 @@
 #++
 
 require_relative "copyright"
+require_relative "directory_licensing"
 require_relative "spdx_header"
 
 class RustHeaderSyntax # :nodoc:
+  include DirectoryLicensing
+
   # REUSE-IgnoreStart
   COPYRIGHT = %r{^//\s*SPDX-FileCopyrightText:\s*(\d{4})\s+(.+)$}
   LICENSE = %r{^//\s*SPDX-License-Identifier:\s*(.+)$}
@@ -44,7 +47,7 @@ class RustHeaderSyntax # :nodoc:
     "#{header.commented('//')}\n#{lines.join}"
   end
 
-  def replaced(header, _lines, body)
-    "#{header.commented('//')}\n#{body.join}"
+  def replaced(header, lines, end_line)
+    "#{header.commented('//')}\n#{after_header(lines, end_line).join}"
   end
 end
