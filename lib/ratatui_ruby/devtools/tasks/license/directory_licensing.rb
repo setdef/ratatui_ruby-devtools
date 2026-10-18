@@ -5,10 +5,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
-require_relative "license_utils"
+require_relative "blame"
 
 # Source code takes its license from the directory it lives in, and every line
-# of it counts toward a contributor's copyright year.
+# of it counts toward an author's copyright year.
 module DirectoryLicensing # :nodoc:
   def covers?(path)
     extensions.include?(File.extname(path).delete_prefix(".")) &&
@@ -32,8 +32,8 @@ module DirectoryLicensing # :nodoc:
     end
   end
 
-  def contributors(path, _lines)
-    LicenseUtils.contributors(path)
+  def contributions(path, _lines)
+    Blame.new(path).contributions
   end
 
   private def after_header(lines, end_line)

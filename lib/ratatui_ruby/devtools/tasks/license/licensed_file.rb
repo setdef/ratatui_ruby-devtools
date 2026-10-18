@@ -37,18 +37,18 @@ class LicensedFile < Data.define(:path, :syntax, :author) # :nodoc:
 
   def annotate
     lines = File.read(path).lines
-    contributors = syntax.contributors(path, lines)
+    contributions = syntax.contributions(path, lines)
     license = syntax.license_for(path)
     existing, end_line = syntax.header_in(lines)
 
     if existing
-      renewed = existing.renewed(author, contributors, license)
+      renewed = existing.renewed(author, contributions, license)
       return if renewed == existing
 
       File.write(path, syntax.replaced(renewed, lines, end_line))
       puts "Updated: #{path}"
     else
-      File.write(path, syntax.added(SpdxHeader.of(author, contributors, license), lines))
+      File.write(path, syntax.added(SpdxHeader.of(author, contributions, license), lines))
       puts "Added header: #{path}"
     end
   end

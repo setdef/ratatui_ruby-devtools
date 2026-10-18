@@ -6,7 +6,7 @@
 #++
 
 require_relative "copyright"
-require_relative "license_utils"
+require_relative "blame"
 require_relative "spdx_header"
 
 class MarkdownHeaderSyntax # :nodoc:
@@ -35,8 +35,8 @@ class MarkdownHeaderSyntax # :nodoc:
 
   # Code blocks hold examples rather than prose, so only prose lines count
   # toward who wrote the document and when.
-  def contributors(path, lines)
-    LicenseUtils.contributors(path, prose_ranges(lines))
+  def contributions(path, lines)
+    Blame.new(path).contributions(prose_ranges(lines))
   end
 
   def header_in(lines)
