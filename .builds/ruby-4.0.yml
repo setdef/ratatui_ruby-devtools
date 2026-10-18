@@ -30,6 +30,7 @@ tasks:
       mise x -- pip install reuse
       mise x -- gem install bundler:4.0.3
       mise reshim
+      mise x -- bundle config set --local path vendor/bundle
       mise x -- bundle config set --local frozen 'true'
       mise x -- bundle install
   - lint: |

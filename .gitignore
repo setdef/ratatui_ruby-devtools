@@ -9,5 +9,6 @@
 /pkg/
 /spec/reports/
 /tmp/
+/vendor/bundle/
 .DS_Store
 *.gem

@@ -9,6 +9,9 @@ set -vx
 if command -v mise >/dev/null 2>&1; then
   mise install
   mise x -- pip install reuse
+  # A gem in the per-user gem directory may have been built for another Ruby,
+  # so install the bundle inside the repo instead.
+  mise x -- bundle config set --local path vendor/bundle
   mise x -- bundle install
   pre-commit install
 else
