@@ -43,6 +43,10 @@ class SemVer
     @prerelease = prerelease
   end
 
+  def major = @segments[0] # :nodoc:
+  def minor = @segments[1] # :nodoc:
+  def patch = @segments[2] # :nodoc:
+
   # Returns the next version after bumping the given segment.
   #
   # Bumping a segment resets all following segments to zero.
