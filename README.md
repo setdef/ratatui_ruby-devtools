@@ -118,6 +118,12 @@ This imports all devtools rake tasks into your project.
 | `rake bump:patch` | Bump patch version |
 | `rake bump:exact[0.1.0]` | Set exact version |
 
+Every bump commits the release for you and refuses to start on the wrong branch or with uncommitted changes.
+
+Before 1.0, every release comes from trunk. Run any bump there.
+
+From 1.0 on, each minor version gets a release branch, so its users can take patch releases without the next minor's changes. Run `bump:minor` or `bump:major` on trunk: it creates `release/X.Y`, commits the release there, imports the release into trunk, and commits that too. Run `bump:patch` on the release branch it fixes. The first `bump:major` to 1.0 starts this workflow.
+
 
 ## Executables
 

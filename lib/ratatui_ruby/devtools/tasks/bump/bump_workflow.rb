@@ -9,15 +9,29 @@ require_relative "repository"
 require_relative "changelog"
 
 # Base class for version bump workflows.
-# Subclasses implement the template methods: prepare, release_on_branch, finalize.
+# Subclasses implement the template methods: assert_can_bump!, prepare,
+# release_on_branch, finalize.
 class BumpWorkflow # :nodoc:
+  # From 1.0 on, each minor version gets a release branch, so its users can
+  # take patch releases without the next minor's changes.
+  def self.for(gem, segment)
+    workflow = if !gem.version.next(segment).stable?
+      UnbranchedRelease
+    elsif segment == :patch
+      PatchRelease
+    else
+      ReleaseFromTrunk
+    end
+    workflow.new(gem:)
+  end
+
   def initialize(gem:, repository: Repository.new)
     @gem = gem
     @repository = repository
   end
 
   def call(segment)
-    @repository.assert_can_bump!(segment)
+    assert_can_bump!(segment)
     @target = @gem.version.next(segment)
 
     prepare(segment)
@@ -36,6 +50,7 @@ class BumpWorkflow # :nodoc:
   end
 
   # Template methods for subclasses
+  private def assert_can_bump!(segment) = @repository.assert_can_bump!(segment)
   private def prepare(segment) = nil
   private def finalize = nil
 end

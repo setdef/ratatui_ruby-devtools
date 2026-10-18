@@ -13,6 +13,7 @@ require_relative "bump/cargo_lockfile"
 require_relative "bump/ruby_gem"
 require_relative "bump/release_from_trunk"
 require_relative "bump/patch_release"
+require_relative "bump/unbranched_release"
 
 # Null lockfile for gems without Rust
 class NullLockfile
@@ -68,17 +69,17 @@ namespace :bump do
 
   desc "Bump major version"
   task :major do
-    ReleaseFromTrunk.new(gem: devtools_gem).call(:major)
+    BumpWorkflow.for(devtools_gem, :major).call(:major)
   end
 
   desc "Bump minor version"
   task :minor do
-    ReleaseFromTrunk.new(gem: devtools_gem).call(:minor)
+    BumpWorkflow.for(devtools_gem, :minor).call(:minor)
   end
 
   desc "Bump patch version"
   task :patch do
-    PatchRelease.new(gem: devtools_gem).call(:patch)
+    BumpWorkflow.for(devtools_gem, :patch).call(:patch)
   end
 
   desc "Set exact version (e.g. rake bump:exact[0.1.0])"

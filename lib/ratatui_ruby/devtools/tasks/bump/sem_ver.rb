@@ -47,6 +47,12 @@ class SemVer
   def minor = @segments[1] # :nodoc:
   def patch = @segments[2] # :nodoc:
 
+  # Whether this version promises a stable public API: 1.0 or later, and not a
+  # prerelease, which SemVer marks as unstable.
+  def stable?
+    major >= 1 && @prerelease.nil?
+  end
+
   # Returns the next version after bumping the given segment.
   #
   # Bumping a segment resets all following segments to zero.

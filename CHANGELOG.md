@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Release branches**: Minor and major releases happened on trunk, so a patch for an older series had no branch to land on. `rake bump:minor` and `rake bump:major` now create a `release/X.Y` branch, release there, and import the release into trunk. `rake bump:patch` releases on the release branch you have checked out and refuses to run on trunk. Each bump commits for you and stops if your working tree has uncommitted changes. `rake bump:exact` no longer prints a suggested commit message.
+- **Release branches from 1.0 on**: Minor and major releases happened on trunk, so a patch for an older series had no branch to land on. Once your gem reaches 1.0, `rake bump:minor` and `rake bump:major` create a `release/X.Y` branch, release there, and import the release into trunk. `rake bump:patch` releases on the release branch you have checked out and refuses to run on trunk. Before 1.0, every bump releases on trunk. Every bump now commits for you and stops if your working tree has uncommitted changes. `rake bump:exact` no longer prints a suggested commit message.
 - **Scaffolded `bin/setup`**: Installs the bundle in `vendor/bundle` instead of the shared per-user gem directory, so native gems always match the project's Ruby. Run `scaffold --update` to pick it up.
 
 ### Fixed
