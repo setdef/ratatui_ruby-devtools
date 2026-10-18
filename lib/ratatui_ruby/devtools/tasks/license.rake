@@ -10,19 +10,19 @@ namespace :license do
     desc "Ensure markdown files have correct CC-BY-SA-4.0 headers"
     task :md, [:files] do |_t, args|
       files = args[:files] || ""
-      ruby "tasks/license/headers_md.rb #{files}"
+      ruby File.expand_path("license/headers_md.rb", __dir__), *files.split
     end
 
     desc "Ensure Ruby files have correct SPDX headers"
     task :rb, [:files] do |_t, args|
       files = args[:files] || ""
-      ruby "tasks/license/headers_rb.rb #{files}"
+      ruby File.expand_path("license/headers_rb.rb", __dir__), *files.split
     end
 
     desc "Ensure Rust files have correct SPDX headers"
     task :rs, [:files] do |_t, args|
       files = args[:files] || ""
-      ruby "tasks/license/headers_rs.rb #{files}"
+      ruby File.expand_path("license/headers_rs.rb", __dir__), *files.split
     end
 
     desc "Ensure all files have correct license headers"
@@ -37,13 +37,13 @@ namespace :license do
     desc "Add MIT-0 SPDX snippet headers to markdown fenced code blocks"
     task :md, [:files] do |_t, args|
       files = args[:files] || ""
-      ruby "tasks/license/snippets_md.rb #{files}"
+      ruby File.expand_path("license/snippets_md.rb", __dir__), *files.split
     end
 
     desc "Add MIT-0 SPDX snippet headers to RDoc code examples in Ruby files"
     task :rdoc, [:files] do |_t, args|
       files = args[:files] || "lib/"
-      ruby "tasks/license/snippets_rdoc.rb #{files}"
+      ruby File.expand_path("license/snippets_rdoc.rb", __dir__), *files.split
     end
 
     desc "Add MIT-0 SPDX snippet headers to all code examples"
