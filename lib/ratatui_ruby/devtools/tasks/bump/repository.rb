@@ -40,6 +40,16 @@ class Repository # :nodoc:
     `git ls-files '#{pattern}' 2>/dev/null`.split("\n")
   end
 
+  # Added, copied, modified, or renamed since HEAD, staged or not, plus new
+  # untracked files. The staged diff also covers a repository with no commits.
+  def changed_files
+    [
+      `git diff --name-only --diff-filter=ACMR HEAD 2>/dev/null`,
+      `git diff --name-only --cached --diff-filter=ACMR 2>/dev/null`,
+      `git ls-files --others --exclude-standard`,
+    ].flat_map { |output| output.split("\n") }.uniq
+  end
+
   def create_branch(name)
     system("git checkout -b #{name}", exception: true)
   end

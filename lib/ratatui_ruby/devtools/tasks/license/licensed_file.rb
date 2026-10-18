@@ -10,8 +10,15 @@ require_relative "license_utils"
 require_relative "spdx_header"
 
 class LicensedFile < Data.define(:path, :syntax, :author) # :nodoc:
+  def self.changed(syntax, repository: Repository.new)
+    files = repository.changed_files.select do |path|
+      syntax.extensions.include?(File.extname(path).delete_prefix(".")) &&
+        syntax.directories.any? { |directory| path.start_with?("#{directory}/") }
+    end
+    of(files, syntax, repository)
+  end
+
   def self.tracked(paths, syntax, repository: Repository.new)
-    author = repository.author
     files = if paths.empty?
       syntax.directories.flat_map do |directory|
         syntax.extensions.flat_map do |extension|
@@ -26,6 +33,15 @@ class LicensedFile < Data.define(:path, :syntax, :author) # :nodoc:
         syntax.extensions.flat_map { |extension| repository.tracked_files("#{path}/**/*.#{extension}") }
       end
     end
+    of(files, syntax, repository)
+  end
+
+  # Asking git for the author only when there are files keeps a run with
+  # nothing to annotate working where git has no identity, as in CI.
+  private_class_method def self.of(files, syntax, repository)
+    return [] if files.empty?
+
+    author = repository.author
     files.map { |file| new(path: file, syntax:, author:) }
   end
 
