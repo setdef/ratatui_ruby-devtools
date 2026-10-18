@@ -33,12 +33,20 @@ namespace :lint do
     end
   end
 
+  desc "Check that every locked gem installs on the oldest supported Ruby"
+  task :lockfile_ruby do
+    require_relative "lint/gem_lockfile"
+    require_relative "lint/supported_rubies"
+
+    GemLockfile.current.verify(SupportedRubies.of(RatatuiRuby::Devtools.gemspec_file).oldest)
+  end
+
   # Build dynamic task lists based on what's available
   docs_tasks = %w[rubycritic]
   docs_tasks.unshift("autodoc") if Rake::Task.task_defined?("autodoc")
   docs_tasks << "safe_rdoc_coverage" if Rake::Task.task_defined?("rdoc:coverage")
 
-  code_tasks = %w[rubocop rubycritic]
+  code_tasks = %w[rubocop rubycritic lockfile_ruby]
   code_tasks += %w[cargo:fmt cargo:clippy cargo:test] if Dir.exist?("ext")
 
   task docs: docs_tasks
