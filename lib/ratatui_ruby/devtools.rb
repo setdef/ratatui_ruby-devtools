@@ -59,8 +59,8 @@ module RatatuiRuby
       # Use this in website repository Rakefiles. These tasks help sync docs
       # from a source gem, update HTML metadata, and deploy.
       #
-      # @param source_gem_dir [String] Path to the source gem directory
-      #   (e.g., "~/Developer/ratatui_ruby")
+      # [source_gem_dir] Path to the source gem's directory, such as
+      #   <tt>"~/Developer/ratatui_ruby"</tt>.
       #
       # === Example
       #
