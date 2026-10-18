@@ -1,0 +1,27 @@
+# frozen_string_literal: true
+
+#--
+# SPDX-FileCopyrightText: 2026 Kerrick Long <me@kerricklong.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#++
+
+require_relative "licensed_file"
+require_relative "rust_header_syntax"
+
+class RustFiles < Data.define(:files) # :nodoc:
+  def self.changed(repository)
+    new(files: LicensedFile.changed(RustHeaderSyntax.new, repository:))
+  end
+
+  def label
+    "Rust"
+  end
+
+  def count
+    files.count
+  end
+
+  def license
+    files.each(&:annotate)
+  end
+end
