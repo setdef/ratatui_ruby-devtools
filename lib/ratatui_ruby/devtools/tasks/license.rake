@@ -65,11 +65,10 @@ namespace :license do
     repository = Repository.new
     markdown = repository.changed_files.select { |path| path.end_with?(".md") }
     ruby = LicensedFile.changed(RubyHeaderSyntax.new, repository:)
-      .select { |file| file.path.start_with?("lib/") && file.path.end_with?(".rb") }
     rust = LicensedFile.changed(RustHeaderSyntax.new, repository:)
 
     if markdown.empty? && ruby.empty? && rust.empty?
-      puts "No changed .md, lib/*.rb, or ext/*.rs files to process"
+      puts "No changed Markdown, Ruby, or Rust files to process"
     else
       unless markdown.empty?
         puts "Processing #{markdown.count} changed .md file(s)..."
@@ -80,14 +79,19 @@ namespace :license do
       end
 
       unless ruby.empty?
-        puts "Processing #{ruby.count} changed lib/*.rb file(s)..."
+        puts "Processing #{ruby.count} changed Ruby file(s)..."
         ruby.each(&:annotate)
-        Rake::Task["license:snippets:rdoc"].invoke(ruby.map(&:path).join(" "))
-        Rake::Task["license:snippets:rdoc"].reenable
+
+        # RDoc examples only appear in the documented library.
+        library = ruby.map(&:path).select { |path| path.start_with?("lib/") && path.end_with?(".rb") }
+        unless library.empty?
+          Rake::Task["license:snippets:rdoc"].invoke(library.join(" "))
+          Rake::Task["license:snippets:rdoc"].reenable
+        end
       end
 
       unless rust.empty?
-        puts "Processing #{rust.count} changed ext/*.rs file(s)..."
+        puts "Processing #{rust.count} changed Rust file(s)..."
         rust.each(&:annotate)
       end
     end
