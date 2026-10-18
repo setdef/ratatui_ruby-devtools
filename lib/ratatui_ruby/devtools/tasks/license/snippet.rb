@@ -5,12 +5,17 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
-# A code example inside a file, from its first to its last line counting
-# from 0, written behind the given comment prefix.
-class Snippet < Data.define(:first, :last, :prefix) # :nodoc:
-  # The same lines as git blame counts them, from 1.
+# A code example inside a file, wrapped from its first to its last line
+# counting from 0, behind the given comment prefix. Its year comes from the
+# code lines alone, which can sit inside markers the wrapper goes around.
+class Snippet < Data.define(:first, :last, :prefix, :code) # :nodoc:
+  def self.around(first, last, prefix: "", code: [first, last])
+    new(first:, last:, prefix:, code:)
+  end
+
+  # The code lines as git blame counts them, from 1.
   def blame_range
-    [first + 1, last + 1]
+    code.map { |line| line + 1 }
   end
 
   def lines_in(file_lines)

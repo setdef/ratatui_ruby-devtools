@@ -5,8 +5,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
-require_relative "copyright"
 require_relative "blame"
+require_relative "copyright"
+require_relative "markdown_document"
 require_relative "spdx_header"
 
 class MarkdownHeaderSyntax # :nodoc:
@@ -15,7 +16,6 @@ class MarkdownHeaderSyntax # :nodoc:
   COPYRIGHT = /SPDX-FileCopyrightText:\s*(\d{4})\s+(.+)$/
   LICENSE_LINE = /SPDX-License-Identifier:\s*(.+)$/
   # REUSE-IgnoreEnd
-  FENCE = /^(````*)\w*$/
 
   def extensions
     %w[md]
@@ -84,11 +84,11 @@ class MarkdownHeaderSyntax # :nodoc:
   end
 
   private def code_blocks(lines)
+    document = MarkdownDocument.new(lines)
     blocks = []
     index = 0
     while index < lines.length
-      fence = lines[index][FENCE, 1]
-      closing = fence && (index + 1).upto(lines.length - 1).find { |later| lines[later].match?(/^#{Regexp.escape(fence)}$/) }
+      closing = document.fence_end(index)
       if closing
         blocks << [index, closing]
         index = closing

@@ -14,9 +14,13 @@ class SnippetFile < Data.define(:path, :syntax) # :nodoc:
   end
 
   def annotate
-    lines = File.read(path).lines
+    return if syntax.excludes?(path)
+
+    original = File.read(path).lines
+    return unless syntax.pending?(original)
+
+    lines = syntax.cleaned(original)
     snippets = syntax.snippets_in(lines)
-    return if snippets.empty?
 
     # Wrapping from the last snippet back keeps the earlier ones' lines where
     # blame found them.

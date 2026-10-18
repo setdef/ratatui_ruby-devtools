@@ -22,6 +22,18 @@ class RdocSnippetSyntax # :nodoc:
     ["*.rb"]
   end
 
+  def excludes?(_path)
+    false
+  end
+
+  def pending?(lines)
+    snippets_in(lines).any?
+  end
+
+  def cleaned(lines)
+    lines
+  end
+
   # Examples not yet wrapped. A one-line example is too small to count.
   def snippets_in(lines)
     snippets = []
@@ -31,7 +43,7 @@ class RdocSnippetSyntax # :nodoc:
       next index += 1 unless prefix
 
       last = last_line(lines, index, prefix)
-      snippet = Snippet.new(first: index, last:, prefix:)
+      snippet = Snippet.around(index, last, prefix:)
       snippets << snippet if last > index && code?(lines, snippet) && !wrapped?(lines, snippet)
       index = last + 1
     end
