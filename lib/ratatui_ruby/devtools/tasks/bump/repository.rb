@@ -17,6 +17,10 @@ class Repository # :nodoc:
     `git branch --show-current`.strip
   end
 
+  def tracked_files(pattern)
+    `git ls-files '#{pattern}' 2>/dev/null`.split("\n")
+  end
+
   def create_branch(name)
     system("git checkout -b #{name}", exception: true)
   end

@@ -30,7 +30,14 @@ module LicenseUtils
   # [name] The contributor's display name.
   # [email] The contributor's email address.
   # [year] The most recent year they modified the file.
-  Contributor = Data.define(:name, :email, :year)
+  class Contributor < Data.define(:name, :email, :year)
+    # The name and email the way git writes an author.
+    #
+    # Copyright holders are matched against this text.
+    def to_s
+      "#{name} <#{email}>"
+    end
+  end
 
   class << self
     # Get all contributors who touched lines in a file (or range of lines).
@@ -94,19 +101,14 @@ module LicenseUtils
       contributors
     end
 
-    # Get YOUR latest year contribution to the file/lines.
-    # your_identifiers should be an array of strings that identify you (name, email fragments).
-    def get_your_latest_year(filepath, your_identifiers, start_line = nil, end_line = nil)
-      contributors = get_contributors_for_lines(filepath, start_line, end_line)
-
-      your_year = nil
-      contributors.each do |contributor, year|
-        if your_identifiers.any? { |id| contributor.include?(id) }
-          your_year = [your_year || 0, year].max
-        end
+    # Every contributor who touched a file, with the latest year each touched
+    # it.
+    #
+    # [filepath] Path to the file.
+    def contributors(filepath)
+      get_contributors_for_lines(filepath).filter_map do |contributor, year|
+        Contributor.new(name: $1.strip, email: $2.strip, year:) if contributor =~ /^(.+?)\s*<(.+)>$/
       end
-
-      your_year || Date.today.year
     end
 
     # Get all contributors EXCEPT you, with their latest years.
