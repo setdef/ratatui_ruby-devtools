@@ -202,7 +202,7 @@ Environment variables for REUSE tasks:
 
 | Variable | Default |
 |----------|---------|
-| `REUSE_COPYRIGHT` | `Kerrick Long <me@kerricklong.com>` |
+| `REUSE_COPYRIGHT` | Your git `user.name` and `user.email` |
 | `REUSE_CODE_LICENSE` | `AGPL-3.0-or-later` |
 | `REUSE_DOC_LICENSE` | `CC-BY-SA-4.0` |
 

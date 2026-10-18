@@ -8,15 +8,15 @@
 require_relative "copyright"
 
 class SpdxHeader < Data.define(:copyrights, :license) # :nodoc:
-  def self.yours(contributors, license)
-    new(copyrights: [Copyright.yours(contributors)], license:)
+  def self.of(author, contributors, license)
+    new(copyrights: [Copyright.of(author, contributors)], license:)
   end
 
-  def renewed(contributors, license)
+  def renewed(author, contributors, license)
     renewed_copyrights = copyrights.map { |copyright| copyright.renewed(contributors) }
-    unless renewed_copyrights.any?(&:yours?)
+    unless renewed_copyrights.any? { |copyright| copyright.held_by?(author) }
       puts "  Adding your copyright"
-      renewed_copyrights << Copyright.yours(contributors)
+      renewed_copyrights << Copyright.of(author, contributors)
     end
     puts "  Fixing license: #{self.license} -> #{license}" if self.license != license
 

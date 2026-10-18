@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
+require_relative "bump/repository"
+
 namespace :reuse do
   desc "Run the REUSE Tool to confirm REUSE compliance"
   task :lint do
@@ -13,7 +15,7 @@ namespace :reuse do
 
   desc "Add SPDX headers to files missing them (per AGENTS.md standards)"
   task :fix do
-    copyright = ENV.fetch("REUSE_COPYRIGHT", "Kerrick Long <me@kerricklong.com>")
+    copyright = ENV.fetch("REUSE_COPYRIGHT") { Repository.new.author.to_s }
 
     # Code files: AGPL-3.0-or-later
     code_extensions = %w[rb rs rake gemspec rbs toml yml yaml json lock].freeze

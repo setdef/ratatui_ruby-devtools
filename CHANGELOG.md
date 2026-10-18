@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`rake reuse:fix` credited Kerrick Long**: It annotated every file it fixed with Kerrick Long's copyright, no matter who ran it. It now uses the identity git gives your commits, from `user.name` and `user.email` or the `GIT_AUTHOR_*` variables, and stops with instructions when git doesn't know who you are. `REUSE_COPYRIGHT` still overrides it.
 - **Short and RubyGems-style versions**: A version like `1.2` crashed `rake bump:patch`. A RubyGems-style prerelease like `1.0.0.beta.1` was read as `1.0.0`, so the next bump skipped past the release. `1.2` now bumps as `1.2.0`, and `1.0.0.beta.1` stops the bump with an error asking for `1.0.0-beta.1`.
 
 ### Removed

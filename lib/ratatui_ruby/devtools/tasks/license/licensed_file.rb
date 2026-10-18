@@ -9,8 +9,9 @@ require_relative "../bump/repository"
 require_relative "license_utils"
 require_relative "spdx_header"
 
-class LicensedFile < Data.define(:path, :syntax) # :nodoc:
+class LicensedFile < Data.define(:path, :syntax, :author) # :nodoc:
   def self.tracked(paths, syntax, repository: Repository.new)
+    author = repository.author
     files = if paths.empty?
       syntax.directories.flat_map do |directory|
         syntax.extensions.flat_map do |extension|
@@ -25,7 +26,7 @@ class LicensedFile < Data.define(:path, :syntax) # :nodoc:
         syntax.extensions.flat_map { |extension| repository.tracked_files("#{path}/**/*.#{extension}") }
       end
     end
-    files.map { |file| new(path: file, syntax:) }
+    files.map { |file| new(path: file, syntax:, author:) }
   end
 
   def annotate
@@ -34,14 +35,14 @@ class LicensedFile < Data.define(:path, :syntax) # :nodoc:
     existing, end_line = syntax.header_in(lines)
 
     if existing
-      renewed = existing.renewed(contributors, license)
+      renewed = existing.renewed(author, contributors, license)
       return if renewed == existing
 
       body = lines.drop(end_line + 1).drop_while { |line| line.strip.empty? }
       File.write(path, syntax.replaced(renewed, lines, body))
       puts "Updated: #{path}"
     else
-      File.write(path, syntax.added(SpdxHeader.yours(contributors, license), lines))
+      File.write(path, syntax.added(SpdxHeader.of(author, contributors, license), lines))
       puts "Added header: #{path}"
     end
   end

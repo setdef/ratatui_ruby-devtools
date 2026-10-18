@@ -5,11 +5,30 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
+require "open3"
 require "shellwords"
 require "tmpdir"
 
 class Repository # :nodoc:
   TRUNK = "trunk"
+
+  class Author < Data.define(:name, :email) # :nodoc:
+    def to_s
+      "#{name} <#{email}>"
+    end
+  end
+
+  # The identity your next commit would carry, from git config or the
+  # GIT_AUTHOR_* variables. Without useConfigOnly, git would guess an email
+  # from the hostname, and that guess would end up in copyright headers.
+  def author
+    ident, status = Open3.capture2("git", "-c", "user.useConfigOnly=true", "var", "GIT_AUTHOR_IDENT", err: File::NULL)
+    name, email = ident.match(/\A(.+) <(.*)> \d+ [+-]\d{4}\n?\z/)&.captures
+    return Author.new(name:, email:) if status.success? && name && email
+
+    raise ArgumentError, "Git doesn't know who you are. Run: git config --global user.name \"Your Name\" " \
+      "and git config --global user.email you@example.com"
+  end
 
   def on_trunk? = current_branch == TRUNK
 

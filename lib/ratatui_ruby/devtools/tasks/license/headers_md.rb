@@ -30,13 +30,17 @@
 # - Uses non-code-block lines for year calculation
 # - Adds header with YOUR copyright if missing
 
+require_relative "../bump/repository"
 require_relative "license_utils"
 
+# You, as git would author your next commit.
+YOUR_AUTHOR = Repository.new.author
+
 # Your name for copyright headers.
-YOUR_NAME = "Kerrick Long"
+YOUR_NAME = YOUR_AUTHOR.name
 
 # Your email for copyright headers.
-YOUR_EMAIL = "me@kerricklong.com"
+YOUR_EMAIL = YOUR_AUTHOR.email
 
 # Identifiers used to match your contributions in git history.
 YOUR_IDENTIFIERS = [YOUR_NAME, YOUR_EMAIL].freeze

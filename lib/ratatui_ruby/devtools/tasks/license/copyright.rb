@@ -8,23 +8,18 @@
 require "date"
 
 class Copyright < Data.define(:year, :holder) # :nodoc:
-  YOUR_NAME = "Kerrick Long"
-  YOUR_EMAIL = "me@kerricklong.com"
-  YOUR_IDENTIFIERS = [YOUR_NAME, YOUR_EMAIL].freeze
-  YOUR_HOLDER = "#{YOUR_NAME} <#{YOUR_EMAIL}>"
-
-  def self.yours(contributors)
-    new(year: latest_year(contributors, YOUR_IDENTIFIERS) || Date.today.year, holder: YOUR_HOLDER)
+  def self.of(author, contributors)
+    new(year: latest_year(contributors, [author.name, author.email]) || Date.today.year, holder: author.to_s)
   end
 
   # A holder matches a contributor when any word of the holder appears in the
-  # contributor's name and email, so "Kerrick Long <...>" matches either name.
+  # contributor's name and email, so "Jane Doe <...>" matches either name.
   def self.latest_year(contributors, words)
     contributors.select { |contributor| words.any? { |word| contributor.to_s.include?(word) } }.map(&:year).max
   end
 
-  def yours?
-    YOUR_IDENTIFIERS.any? { |identifier| holder.include?(identifier) }
+  def held_by?(author)
+    [author.name, author.email].any? { |identifier| holder.include?(identifier) }
   end
 
   def renewed(contributors)
