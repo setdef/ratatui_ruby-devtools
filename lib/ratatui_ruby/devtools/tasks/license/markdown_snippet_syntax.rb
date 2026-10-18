@@ -45,10 +45,21 @@ class MarkdownSnippetSyntax # :nodoc:
     lines = lines.dup
     removals.sort_by { |first, _| -first }.each do |first, last|
       lines.delete_at(last)
-      closing = first.upto(lines.length - 1).find { |index| lines[index].include?("-->") } || lines.length
-      (closing - first + 1).times { lines.delete_at(first) }
+      (opening_end(lines, first) - first + 1).times { lines.delete_at(first) }
     end
     lines
+  end
+
+  # The last line of the opening wrapper at +first+. A SnippetBegin comment
+  # that closes on its own line is followed by the comment holding the SPDX
+  # tags, which goes with it.
+  private def opening_end(lines, first)
+    start = tags_follow?(lines, first) ? first + 1 : first
+    start.upto(lines.length - 1).find { |index| lines[index].include?("-->") } || (lines.length - 1)
+  end
+
+  private def tags_follow?(lines, first)
+    lines[first].include?("-->") && lines[first + 1]&.include?("<!--")
   end
 
   def snippets_in(lines)
