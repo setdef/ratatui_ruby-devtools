@@ -5,9 +5,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
-require_relative "license_script"
 require_relative "licensed_file"
+require_relative "rdoc_snippet_syntax"
 require_relative "ruby_header_syntax"
+require_relative "snippet_file"
 
 class RubyFiles < Data.define(:files) # :nodoc:
   def self.changed(repository)
@@ -24,11 +25,13 @@ class RubyFiles < Data.define(:files) # :nodoc:
 
   def license
     files.each(&:annotate)
-    LicenseScript.new("snippets_rdoc.rb").run(library) unless library.empty?
+    library.each(&:annotate)
   end
 
   # RDoc examples only appear in the documented library.
   private def library
+    syntax = RdocSnippetSyntax.new
     files.map(&:path).select { |path| path.start_with?("lib/") && path.end_with?(".rb") }
+      .map { |path| SnippetFile.new(path:, syntax:) }
   end
 end

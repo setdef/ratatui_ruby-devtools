@@ -14,16 +14,7 @@ class LicensedFile < Data.define(:path, :syntax, :author) # :nodoc:
   end
 
   def self.tracked(paths, syntax, repository: Repository.new)
-    files = if paths.empty?
-      syntax.tracked_patterns.flat_map { |pattern| repository.tracked_files(pattern) }.uniq
-    else
-      paths.flat_map do |path|
-        next path unless File.directory?(path)
-
-        syntax.extensions.flat_map { |extension| repository.tracked_files("#{path}/**/*.#{extension}") }
-      end
-    end
-    of(files, syntax, repository)
+    of(repository.tracked_files_for(paths, syntax), syntax, repository)
   end
 
   # Asking git for the author only when there are files keeps a run with

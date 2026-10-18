@@ -40,6 +40,18 @@ class Repository # :nodoc:
     `git ls-files '#{pattern}' 2>/dev/null`.split("\n")
   end
 
+  # The tracked files a syntax covers, under the given paths, or everywhere
+  # it looks by default. A path that isn't a directory is taken as it is.
+  def tracked_files_for(paths, syntax)
+    return syntax.tracked_patterns.flat_map { |pattern| tracked_files(pattern) }.uniq if paths.empty?
+
+    paths.flat_map do |path|
+      next path unless File.directory?(path)
+
+      syntax.extensions.flat_map { |extension| tracked_files("#{path}/**/*.#{extension}") }
+    end
+  end
+
   # Added, copied, modified, or renamed since HEAD, staged or not, plus new
   # untracked files. The staged diff also covers a repository with no commits.
   def changed_files

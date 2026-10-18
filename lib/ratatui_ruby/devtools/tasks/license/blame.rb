@@ -22,6 +22,13 @@ class Blame < Data.define(:path) # :nodoc:
     found.group_by(&:author).map { |_, same| same.max_by(&:year) }
   end
 
+  # The latest year anyone touched the lines, counting uncommitted lines as
+  # this year, or this year when nothing is known.
+  # [range] A pair of first and last line numbers, counting from 1.
+  def latest_year(range)
+    commits_in(range).values.filter_map { |commit| commit[:year] }.max || Date.today.year
+  end
+
   private def contributions_in(range)
     commits_in(range).flat_map do |commit, author|
       next [] if commit == UNCOMMITTED
