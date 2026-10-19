@@ -35,12 +35,12 @@ module DirectoryLicensing # :nodoc:
 
   # Editing the license header, as when relicensing, isn't authorship of the
   # file.
-  def contributions(path, lines)
+  def contributions(path, lines, author)
     _, end_line = header_in(lines)
-    return Blame.new(path).contributions unless end_line
+    return Blame.new(path).contributions(uncommitted_by: author) unless end_line
     return [] if end_line + 1 >= lines.length
 
-    Blame.new(path).contributions([[end_line + 2, lines.length]])
+    Blame.new(path).contributions([[end_line + 2, lines.length]], uncommitted_by: author)
   end
 
   private def after_header(lines, end_line)

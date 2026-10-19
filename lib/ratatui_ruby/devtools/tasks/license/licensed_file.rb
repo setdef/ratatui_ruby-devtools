@@ -28,7 +28,7 @@ class LicensedFile < Data.define(:path, :syntax, :author) # :nodoc:
 
   def annotate
     lines = File.read(path).lines
-    contributions = syntax.contributions(path, lines)
+    contributions = syntax.contributions(path, lines, author)
     license = syntax.license_for(path)
     existing, end_line = syntax.header_in(lines)
 

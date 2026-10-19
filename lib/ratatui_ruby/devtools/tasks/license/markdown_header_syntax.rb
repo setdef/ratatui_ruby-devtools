@@ -35,8 +35,8 @@ class MarkdownHeaderSyntax # :nodoc:
 
   # Code blocks hold examples rather than prose, so only prose lines count
   # toward who wrote the document and when.
-  def contributions(path, lines)
-    Blame.new(path).contributions(prose_ranges(lines))
+  def contributions(path, lines, author)
+    Blame.new(path).contributions(prose_ranges(lines), uncommitted_by: author)
   end
 
   def header_in(lines)
