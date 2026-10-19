@@ -71,7 +71,3 @@ class PlatformGem
     Gem::Platform.new([local.cpu, local.os, nil])
   end
 end
-
-if $PROGRAM_NAME == __FILE__
-  PlatformGem.new.build
-end
