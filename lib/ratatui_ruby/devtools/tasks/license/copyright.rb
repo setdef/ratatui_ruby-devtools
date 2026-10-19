@@ -23,9 +23,11 @@ class Copyright < Data.define(:year, :holder) # :nodoc:
     [author.name, author.email].any? { |identifier| holder.include?(identifier) }
   end
 
+  # Git can know less than the notice does, as when history was rewritten or
+  # the work came from elsewhere.
   def renewed(contributions)
     latest_year = self.class.latest_year(contributions, holder.split)
-    return self unless latest_year && latest_year != year
+    return self unless latest_year && latest_year > year
 
     puts "  Updated #{holder.split.first}'s copyright year: #{year} -> #{latest_year}"
     with(year: latest_year)
