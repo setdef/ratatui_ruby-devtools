@@ -6,6 +6,8 @@
 #++
 
 require_relative "bump/repository"
+require_relative "license/reuse_tool"
+require_relative "license/unlicensed_files"
 
 namespace :reuse do
   desc "Run the REUSE Tool to confirm REUSE compliance"
@@ -15,46 +17,9 @@ namespace :reuse do
 
   desc "Add SPDX headers to files missing them (per AGENTS.md standards)"
   task :fix do
-    copyright = ENV.fetch("REUSE_COPYRIGHT") { Repository.new.author.to_s }
-
-    # Code files: AGPL-3.0-or-later
-    code_extensions = %w[rb rs rake gemspec rbs toml yml yaml json lock].freeze
-    code_license = ENV.fetch("REUSE_CODE_LICENSE", "AGPL-3.0-or-later")
-
-    # Documentation files: CC-BY-SA-4.0
-    doc_extensions = %w[md txt].freeze
-    doc_license = ENV.fetch("REUSE_DOC_LICENSE", "CC-BY-SA-4.0")
-
-    # Find files missing headers (listed after "no copyright and licensing" message)
     puts "Checking for files missing REUSE headers..."
-    output = `reuse lint 2>&1`
-    in_missing_section = false
-    missing_files = output.lines.filter_map do |line|
-      in_missing_section = true if line.include?("no copyright and licensing")
-      in_missing_section = false if line.start_with?("# ") && !line.include?("copyright")
-      next unless in_missing_section
-
-      line.match(/^\* (.+)/)&.[](1)
-    end
-
-    if missing_files.empty?
-      puts "All files have REUSE headers!"
-    else
-      missing_files.each do |file|
-        ext = File.extname(file).delete(".")
-        license = if code_extensions.include?(ext)
-          code_license
-        elsif doc_extensions.include?(ext)
-          doc_license
-        else
-          puts "  Skipping #{file} (unknown extension: .#{ext})"
-          next
-        end
-
-        puts "  Annotating #{file} with #{license}"
-        sh "reuse annotate --license #{license} --copyright '#{copyright}' --skip-existing '#{file}'", verbose: false
-      end
-    end
+    overrides = ENV.slice("REUSE_COPYRIGHT", "REUSE_CODE_LICENSE", "REUSE_DOC_LICENSE")
+    UnlicensedFiles.new(ReuseTool.new, Repository.new, overrides).license.each { |message| puts message }
   end
 
   desc "Normalize Ruby files: frozen_string_literal at top, SPDX in #--/#++ block"

@@ -211,12 +211,12 @@ RatatuiRuby::Devtools.non_runtime_license = "LicenseRef-Commercial"
 ```
 <!-- SPDX-SnippetEnd -->
 
-Environment variables for REUSE tasks:
+`rake reuse:fix` gives Ruby, RBS, Rust, and Markdown files the same headers the license tasks write. Environment variables set what it writes for other files:
 
 | Variable | Default |
 |----------|---------|
 | `REUSE_COPYRIGHT` | Your git `user.name` and `user.email` |
-| `REUSE_CODE_LICENSE` | `AGPL-3.0-or-later` |
+| `REUSE_CODE_LICENSE` | The license the license tasks would choose |
 | `REUSE_DOC_LICENSE` | `CC-BY-SA-4.0` |
 
 

@@ -1,0 +1,12 @@
+# frozen_string_literal: true
+
+#--
+# SPDX-FileCopyrightText: 2026 Kerrick Long <me@kerricklong.com>
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#++
+
+class ReuseAnnotatedFile < Data.define(:path, :license, :copyright, :tool) # :nodoc:
+  def annotate
+    ["Annotating #{path} with #{license}", *tool.annotate(path, license:, copyright:)]
+  end
+end
