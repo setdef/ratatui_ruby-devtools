@@ -48,14 +48,7 @@ class RubyHeaderSyntax # :nodoc:
 
   def replaced(header, lines, end_line)
     frozen = frozen_string_literal_in(lines)
-    preamble = if frozen
-      "#{frozen}\n"
-    elsif lines.first.strip.empty?
-      FROZEN_STRING_LITERAL
-    else
-      "#{FROZEN_STRING_LITERAL}\n"
-    end
-    "#{preamble}#{block(header)}\n#{after_header(lines, end_line).join}"
+    "#{frozen || FROZEN_STRING_LITERAL}\n#{block(header)}\n#{after_header(lines, end_line).join}"
   end
 
   private def frozen_string_literal_in(lines)
