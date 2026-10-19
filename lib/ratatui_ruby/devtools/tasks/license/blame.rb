@@ -9,10 +9,13 @@ require "date"
 require "open3"
 require_relative "contribution"
 
-# Who last touched each line of a file, counting Co-Authored-By trailers as
-# well as commit authors. Given +contents+, it blames that text against the
-# file's history instead of what's on disk, so line numbers can refer to
-# lines that are about to be written.
+# Who last touched each line of a file. Given +contents+, it blames that text
+# against the file's history instead of what's on disk, so line numbers can
+# refer to lines that are about to be written.
+#
+# Only commit authors count. Co-Authored-By trailers credit AI tools, which
+# can't hold copyright, and people whose idea a commit took up without their
+# code; git history already credits both.
 class Blame < Data.define(:path, :contents) # :nodoc:
   UNCOMMITTED = "0" * 40
 
@@ -40,11 +43,10 @@ class Blame < Data.define(:path, :contents) # :nodoc:
         next [Contribution.new(author: uncommitted_by, year: Date.today.year)]
       end
 
+      next [] unless author[:name] && author[:email]
+
       year = author[:year] || Date.today.year
-      authors = (author[:name] && author[:email]) ? [[author[:name].strip, author[:email].strip]] : []
-      (authors + co_authors_of(commit)).map do |name, email|
-        Contribution.new(author: Repository::Author.new(name:, email:), year:)
-      end
+      [Contribution.new(author: Repository::Author.new(name: author[:name].strip, email: author[:email].strip), year:)]
     end
   end
 
@@ -66,10 +68,5 @@ class Blame < Data.define(:path, :contents) # :nodoc:
       end
     end
     commits
-  end
-
-  private def co_authors_of(commit)
-    message, _status = Open3.capture2("git", "log", "-1", "--format=%B", commit)
-    message.scan(/^Co-Authored-By:\s*(.+?)\s*<(.+?)>\s*$/i).map { |name, email| [name.strip, email.strip] }
   end
 end
