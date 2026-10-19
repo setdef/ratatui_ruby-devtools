@@ -13,14 +13,14 @@ require_relative "rust_files"
 class ChangedFiles < Data.define(:repository) # :nodoc:
   LANGUAGES = [MarkdownFiles, RubyFiles, RustFiles].freeze
 
+  # Licenses what changed and says what it did.
   def license
     languages = LANGUAGES.map { |language| language.changed(repository) }
     changed = languages.reject { |language| language.count.zero? }
-    return puts "No changed #{sentence(languages.map(&:label))} files to process" if changed.empty?
+    return ["No changed #{sentence(languages.map(&:label))} files to process"] if changed.empty?
 
-    changed.each do |language|
-      puts "Processing #{language.count} changed #{language.label} file(s)..."
-      language.license
+    changed.flat_map do |language|
+      ["Processing #{language.count} changed #{language.label} file(s)...", *language.license]
     end
   end
 

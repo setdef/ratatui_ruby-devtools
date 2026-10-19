@@ -6,6 +6,7 @@
 #++
 
 require_relative "copyright"
+require_relative "renewal"
 require_relative "spdx_header"
 
 # The tags that open a snippet already wrapped, from their first to their last
@@ -31,9 +32,8 @@ class SnippetOpening < Data.define(:first, :last, :header) # :nodoc:
     header.copyrights
   end
 
-  # The opening with its notices renewed, or itself when they already hold.
-  def renewed(contributions, license)
-    renewed = header.renewed(contributions, license)
-    (renewed == header) ? self : with(header: renewed)
+  def renewal(contributions, license)
+    renewal = header.renewal(contributions, license)
+    Renewal.new(value: with(header: renewal.value), notices: renewal.notices)
   end
 end

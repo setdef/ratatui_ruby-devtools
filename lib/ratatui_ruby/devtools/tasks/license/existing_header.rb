@@ -8,8 +8,8 @@
 # A file's license header, ending on +end_line+ counting from 0.
 class ExistingHeader < Data.define(:header, :end_line) # :nodoc:
   def revise(revision)
-    renewed = header.renewed(revision.contributions, revision.license)
-    revision.replace(renewed, end_line) unless renewed == header
+    renewal = header.renewal(revision.contributions, revision.license)
+    revision.replace(renewal, end_line) if renewal.changed?
   end
 
   # The lines below the header, as git blame counts them, from 1.

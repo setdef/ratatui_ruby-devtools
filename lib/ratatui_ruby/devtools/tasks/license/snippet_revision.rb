@@ -12,13 +12,14 @@ require_relative "copyright"
 # wrapped, and each wrapped one whose notices have moved on asks to be
 # reopened.
 class SnippetRevision # :nodoc:
-  attr_reader :snippets
-
   def initialize(path:, text:, syntax:, author:)
+    @path = path
+    @original = text
     @syntax = syntax
     @author = author
     @lines = syntax.cleaned(text.lines)
     @snippets = syntax.snippets_in(@lines)
+    @notices = []
     # Blame reads the cleaned lines the snippets were found in, not the file
     # on disk.
     @blame = Blame.new(path:, contents: @lines.join)
@@ -35,6 +36,23 @@ class SnippetRevision # :nodoc:
     @lines.join
   end
 
+  def changed?
+    text != @original
+  end
+
+  # What the revision did, for whoever ran it.
+  def messages
+    return [] unless changed?
+
+    wrapped = @snippets.count(&:bare?)
+    summary = if wrapped.zero?
+      "Updated: #{@path}"
+    else
+      "Updated: #{@path} (#{wrapped} code block(s))"
+    end
+    [*@notices.map { |notice| "  #{notice}" }, summary]
+  end
+
   def contributions(snippet)
     @blame.contributions([snippet.blame_range], uncommitted_by: @author)
   end
@@ -49,7 +67,9 @@ class SnippetRevision # :nodoc:
     @lines.insert(snippet.first, *@syntax.opening(snippet, copyrights))
   end
 
-  def reopen(snippet, opening)
+  def reopen(snippet, renewal)
+    opening = renewal.value
     @lines[opening.span] = @syntax.opening(snippet, opening.copyrights)
+    @notices.concat(renewal.notices)
   end
 end

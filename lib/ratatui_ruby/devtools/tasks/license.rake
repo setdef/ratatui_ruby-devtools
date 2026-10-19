@@ -23,7 +23,7 @@ namespace :license do
     }.each do |name, (description, syntax)|
       desc description
       task name, [:files] do |_t, args|
-        LicensedFile.tracked(args[:files].to_s.split, syntax.new).each(&:annotate)
+        LicensedFile.tracked(args[:files].to_s.split, syntax.new).flat_map(&:annotate).each { |message| puts message }
       end
     end
 
@@ -38,7 +38,7 @@ namespace :license do
     }.each do |name, (description, syntax, default)|
       desc description
       task name, [:files] do |_t, args|
-        SnippetFile.tracked((args[:files] || default).split, syntax.new).each(&:annotate)
+        SnippetFile.tracked((args[:files] || default).split, syntax.new).flat_map(&:annotate).each { |message| puts message }
       end
     end
 
@@ -51,6 +51,6 @@ namespace :license do
 
   desc "Run license tasks on changed files only (staged + unstaged)"
   task :new do
-    ChangedFiles.new(Repository.new).license
+    ChangedFiles.new(Repository.new).license.each { |message| puts message }
   end
 end

@@ -10,13 +10,14 @@ require_relative "spdx_header"
 # One file's license header brought up to date: the header the file has asks
 # to be replaced, or the one it lacks asks to be added.
 class HeaderRevision # :nodoc:
-  attr_reader :text, :report
+  attr_reader :text
 
   def initialize(path:, lines:, syntax:, author:)
     @path = path
     @lines = lines
     @syntax = syntax
     @author = author
+    @messages = []
   end
 
   def contributions
@@ -27,13 +28,18 @@ class HeaderRevision # :nodoc:
     @syntax.license_for(@path)
   end
 
-  def replace(header, end_line)
-    @text = @syntax.replaced(header, @lines, end_line)
-    @report = "Updated: #{@path}"
+  def replace(renewal, end_line)
+    @text = @syntax.replaced(renewal.value, @lines, end_line)
+    @messages = [*renewal.notices.map { |notice| "  #{notice}" }, "Updated: #{@path}"]
   end
 
   def add
     @text = @syntax.added(SpdxHeader.of(@author, contributions, license), @lines)
-    @report = "Added header: #{@path}"
+    @messages = ["Added header: #{@path}"]
+  end
+
+  # What the revision did, for whoever ran it.
+  def messages
+    @messages.dup
   end
 end

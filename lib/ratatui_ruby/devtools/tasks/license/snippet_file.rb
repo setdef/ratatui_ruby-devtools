@@ -17,20 +17,12 @@ class SnippetFile < Data.define(:path, :syntax, :author) # :nodoc:
     files.map { |path| new(path:, syntax:, author:) }
   end
 
+  # Brings the file's snippets up to date and says what changed.
   def annotate
-    return if syntax.excludes?(path)
+    return [] if syntax.excludes?(path)
 
-    original = File.read(path)
-    revision = SnippetRevision.new(path:, text: original, syntax:, author:).run
-    return if revision.text == original
-
-    File.write(path, revision.text)
-    wrapped = revision.snippets.count(&:bare?)
-    message = if wrapped.zero?
-      "Updated: #{path}"
-    else
-      "Updated: #{path} (#{wrapped} code block(s))"
-    end
-    puts message
+    revision = SnippetRevision.new(path:, text: File.read(path), syntax:, author:).run
+    File.write(path, revision.text) if revision.changed?
+    revision.messages
   end
 end

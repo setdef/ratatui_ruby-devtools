@@ -6,6 +6,7 @@
 #++
 
 require "date"
+require_relative "renewal"
 
 class Copyright < Data.define(:year, :holder) # :nodoc:
   def self.of(contribution)
@@ -30,12 +31,14 @@ class Copyright < Data.define(:year, :holder) # :nodoc:
 
   # Git can know less than the notice does, as when history was rewritten or
   # the work came from elsewhere.
-  def renewed(contributions)
+  def renewal(contributions)
     latest_year = self.class.latest_year(contributions, holder.split)
-    return self unless latest_year && latest_year > year
+    return Renewal.unchanged(self) unless latest_year && latest_year > year
 
-    puts "  Updated #{holder.split.first}'s copyright year: #{year} -> #{latest_year}"
-    with(year: latest_year)
+    Renewal.new(
+      value: with(year: latest_year),
+      notices: ["Updated #{holder.split.first}'s copyright year: #{year} -> #{latest_year}"]
+    )
   end
 
   def to_s

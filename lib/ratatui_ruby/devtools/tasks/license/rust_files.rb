@@ -22,6 +22,6 @@ class RustFiles < Data.define(:files) # :nodoc:
   end
 
   def license
-    files.each(&:annotate)
+    files.flat_map(&:annotate)
   end
 end

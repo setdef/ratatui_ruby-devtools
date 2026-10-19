@@ -24,8 +24,7 @@ class RubyFiles < Data.define(:files) # :nodoc:
   end
 
   def license
-    files.each(&:annotate)
-    library.each(&:annotate)
+    files.flat_map(&:annotate) + library.flat_map(&:annotate)
   end
 
   # RDoc examples only appear in the documented library.

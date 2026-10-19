@@ -6,6 +6,7 @@
 #++
 
 require_relative "copyright"
+require_relative "renewal"
 
 class SpdxHeader < Data.define(:copyrights, :license) # :nodoc:
   def self.of(author, contributions, license)
@@ -17,17 +18,19 @@ class SpdxHeader < Data.define(:copyrights, :license) # :nodoc:
     new(copyrights:, license:)
   end
 
-  def renewed(contributions, license)
-    renewed_copyrights = copyrights.map { |copyright| copyright.renewed(contributions) }
+  def renewal(contributions, license)
+    renewals = copyrights.map { |copyright| copyright.renewal(contributions) }
+    renewed_copyrights = renewals.map(&:value)
+    notices = renewals.flat_map(&:notices)
     contributions.each do |contribution|
       next if renewed_copyrights.any? { |copyright| copyright.held_by?(contribution.author) }
 
-      puts "  Adding #{contribution.author.name}'s copyright"
+      notices << "Adding #{contribution.author.name}'s copyright"
       renewed_copyrights << Copyright.of(contribution)
     end
-    puts "  Fixing license: #{self.license} -> #{license}" if self.license != license
+    notices << "Fixing license: #{self.license} -> #{license}" if self.license != license
 
-    with(copyrights: renewed_copyrights, license:)
+    Renewal.new(value: with(copyrights: renewed_copyrights, license:), notices:)
   end
 
   def commented(prefix)

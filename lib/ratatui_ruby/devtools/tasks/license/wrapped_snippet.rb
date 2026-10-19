@@ -16,7 +16,7 @@ class WrappedSnippet < Data.define(:snippet, :opening) # :nodoc:
   end
 
   def revise(revision)
-    renewed = opening.renewed(revision.contributions(self), revision.license)
-    revision.reopen(snippet, renewed) unless renewed == opening
+    renewal = opening.renewal(revision.contributions(self), revision.license)
+    revision.reopen(snippet, renewal) if renewal.changed?
   end
 end

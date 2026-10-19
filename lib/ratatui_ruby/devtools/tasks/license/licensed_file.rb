@@ -26,13 +26,12 @@ class LicensedFile < Data.define(:path, :syntax, :author) # :nodoc:
     files.map { |file| new(path: file, syntax:, author:) }
   end
 
+  # Brings the file's header up to date and says what changed.
   def annotate
     lines = File.read(path).lines
     revision = HeaderRevision.new(path:, lines:, syntax:, author:)
     syntax.header_in(lines).revise(revision)
-    return unless revision.text
-
-    File.write(path, revision.text)
-    puts revision.report
+    File.write(path, revision.text) if revision.text
+    revision.messages
   end
 end
