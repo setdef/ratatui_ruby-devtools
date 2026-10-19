@@ -10,9 +10,15 @@ require "open3"
 require_relative "contribution"
 
 # Who last touched each line of a file, counting Co-Authored-By trailers as
-# well as commit authors.
-class Blame < Data.define(:path) # :nodoc:
+# well as commit authors. Given +contents+, it blames that text against the
+# file's history instead of what's on disk, so line numbers can refer to
+# lines that are about to be written.
+class Blame < Data.define(:path, :contents) # :nodoc:
   UNCOMMITTED = "0" * 40
+
+  def initialize(path:, contents: nil)
+    super
+  end
 
   # Each author once, with the latest year they touched the lines.
   # [line_ranges] Pairs of first and last line numbers, counting from 1.
@@ -42,9 +48,10 @@ class Blame < Data.define(:path) # :nodoc:
   end
 
   private def commits_in(range)
-    command = %w[git blame]
+    command = %w[git blame --porcelain]
     command += ["-L", range.join(",")] if range
-    output, _status = Open3.capture2(*command, "--porcelain", "--", path)
+    command += ["--contents", "-"] if contents
+    output, _status = Open3.capture2(*command, "--", path, stdin_data: contents.to_s)
 
     commits = {}
     commit = nil

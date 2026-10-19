@@ -22,9 +22,10 @@ class SnippetFile < Data.define(:path, :syntax) # :nodoc:
     lines = syntax.cleaned(original)
     snippets = syntax.snippets_in(lines)
 
-    # Wrapping from the last snippet back keeps the earlier ones' lines where
-    # blame found them.
-    blame = Blame.new(path)
+    # Blame reads the cleaned lines the snippets were found in, not the file
+    # on disk, and wrapping from the last snippet back keeps the earlier ones
+    # where blame found them.
+    blame = Blame.new(path:, contents: lines.join)
     snippets.reverse_each do |snippet|
       year = blame.latest_year(snippet.blame_range)
       lines.insert(snippet.last + 1, *syntax.closing(snippet))
