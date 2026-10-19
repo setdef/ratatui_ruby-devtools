@@ -38,7 +38,7 @@ module RatatuiRuby
 
     class << self
       # Configuration accessors - auto-discovered if not set
-      attr_writer :gem_name, :gemspec_file, :version_file
+      attr_writer :gem_name, :gemspec_file, :version_file, :non_runtime_license, :snippet_paths
 
       # Loads gem development Rake tasks (test, lint, bump, license, etc.)
       #
@@ -113,6 +113,41 @@ module RatatuiRuby
       # <tt>version_file=</tt> for non-standard layouts.
       def version_file
         @version_file ||= discover_version_file
+      end
+
+      # The license for code apps don't link.
+      #
+      # An app links the code it requires and the extensions it compiles.
+      # The license tasks give that code the license in your gemspec. Tests,
+      # tasks, scripts, type signatures, and examples never become part of
+      # an app, so they get this license.
+      #
+      # Defaults to <tt>"AGPL-3.0-or-later"</tt>. Set
+      # <tt>non_runtime_license=</tt> to license them differently, as a
+      # commercial gem would.
+      #
+      # === Example
+      #
+      #   RatatuiRuby::Devtools.non_runtime_license = "LicenseRef-Commercial"
+      #
+      def non_runtime_license
+        @non_runtime_license ||= "AGPL-3.0-or-later"
+      end
+
+      # Path prefixes for code licensed like the snippets in your docs.
+      #
+      # Some examples are snippets grown large. App developers copy them
+      # whole into their own apps, so they need the same freedom as a
+      # snippet. The license tasks give code under these prefixes MIT-0.
+      #
+      # Defaults to none.
+      #
+      # === Example
+      #
+      #   RatatuiRuby::Devtools.snippet_paths = %w[examples/widget_ examples/verify_]
+      #
+      def snippet_paths
+        @snippet_paths ||= []
       end
 
       # Returns the path to the templates directory.

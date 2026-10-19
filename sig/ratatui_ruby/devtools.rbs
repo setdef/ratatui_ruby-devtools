@@ -9,6 +9,10 @@ module RatatuiRuby
     end
 
     def self.install!: () -> void
+    def self.non_runtime_license: () -> String
+    def self.non_runtime_license=: (String) -> String
+    def self.snippet_paths: () -> Array[String]
+    def self.snippet_paths=: (Array[String]) -> Array[String]
     def self.templates_path: () -> String
     def self.tasks_path: () -> String
   end

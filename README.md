@@ -198,6 +198,19 @@ RatatuiRuby::Devtools.version_file = "lib/my_gem/version.rb"
 ```
 <!-- SPDX-SnippetEnd -->
 
+The license tasks give the code apps link, from your gemspec's `require_paths` and `extensions`, the license in your gemspec. Everything else, such as tests, tasks, and type signatures, gets AGPL-3.0-or-later. Examples that app developers copy whole are snippets grown large, so you can give them MIT-0 like the snippets in your docs. A commercial gem can license its other code differently:
+
+<!-- SPDX-SnippetBegin -->
+<!--
+  SPDX-SnippetCopyrightText: 2026 Kerrick Long
+  SPDX-License-Identifier: MIT-0
+-->
+```ruby
+RatatuiRuby::Devtools.snippet_paths = %w[examples/widget_ examples/verify_]
+RatatuiRuby::Devtools.non_runtime_license = "LicenseRef-Commercial"
+```
+<!-- SPDX-SnippetEnd -->
+
 Environment variables for REUSE tasks:
 
 | Variable | Default |

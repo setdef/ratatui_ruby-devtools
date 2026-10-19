@@ -6,10 +6,10 @@
 #++
 
 require_relative "blame"
+require_relative "licensing"
 
-# Source code takes its license from the directory it lives in, and
-# everything below its license header counts toward an author's copyright
-# year.
+# Source code takes its license from where it lives, and everything below its
+# license header counts toward an author's copyright year.
 module DirectoryLicensing # :nodoc:
   def covers?(path)
     extensions.include?(File.extname(path).delete_prefix(".")) &&
@@ -23,14 +23,7 @@ module DirectoryLicensing # :nodoc:
   end
 
   def license_for(path)
-    case path
-    when %r{^(lib|sig/ratatui_ruby|ext|test)/}
-      "LGPL-3.0-or-later"
-    when %r{^(examples|sig/examples)/(widget_|verify_)}
-      "MIT-0"
-    else
-      "AGPL-3.0-or-later"
-    end
+    (@licensing ||= Licensing.current).license_for(path)
   end
 
   # Editing the license header, as when relicensing, isn't authorship of the
