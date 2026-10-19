@@ -7,6 +7,7 @@
 
 require_relative "snippet"
 require_relative "snippet_opening"
+require_relative "wrapped_snippet"
 
 # RDoc examples are comment lines indented three or more spaces. The SPDX
 # wrapper sits between #-- and #++ so RDoc leaves it out of the docs.
@@ -48,7 +49,7 @@ class RdocSnippetSyntax # :nodoc:
       next snippet unless wrapped?(lines, snippet)
 
       opening = opening_of(lines, snippet)
-      snippet.with(opening:) if opening
+      WrappedSnippet.new(snippet:, opening:) if opening
     end
   end
 

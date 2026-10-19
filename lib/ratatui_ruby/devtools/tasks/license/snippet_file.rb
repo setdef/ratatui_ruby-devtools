@@ -6,8 +6,7 @@
 #++
 
 require_relative "../bump/repository"
-require_relative "blame"
-require_relative "copyright"
+require_relative "snippet_revision"
 
 class SnippetFile < Data.define(:path, :syntax, :author) # :nodoc:
   def self.tracked(paths, syntax, repository: Repository.new)
@@ -22,46 +21,16 @@ class SnippetFile < Data.define(:path, :syntax, :author) # :nodoc:
     return if syntax.excludes?(path)
 
     original = File.read(path)
-    lines = syntax.cleaned(original.lines)
-    snippets = syntax.snippets_in(lines)
+    revision = SnippetRevision.new(path:, text: original, syntax:, author:).run
+    return if revision.text == original
 
-    # Blame reads the cleaned lines the snippets were found in, not the file
-    # on disk, and wrapping from the last snippet back keeps the earlier ones
-    # where blame found them.
-    blame = Blame.new(path:, contents: lines.join)
-    snippets.reverse_each do |snippet|
-      contributions = blame.contributions([snippet.blame_range], uncommitted_by: author)
-      if snippet.opening
-        renew(lines, snippet, contributions)
-      else
-        wrap(lines, snippet, contributions)
-      end
-    end
-
-    updated = lines.join
-    return if updated == original
-
-    File.write(path, updated)
-    wrapped = snippets.count { |snippet| !snippet.opening }
+    File.write(path, revision.text)
+    wrapped = revision.snippets.count(&:bare?)
     message = if wrapped.zero?
       "Updated: #{path}"
     else
       "Updated: #{path} (#{wrapped} code block(s))"
     end
     puts message
-  end
-
-  private def wrap(lines, snippet, contributions)
-    copyrights = contributions.map { |contribution| Copyright.of(contribution) }.sort_by(&:holder)
-    lines.insert(snippet.last + 1, *syntax.closing(snippet))
-    lines.insert(snippet.first, *syntax.opening(snippet, copyrights))
-  end
-
-  private def renew(lines, snippet, contributions)
-    opening = snippet.opening
-    renewed = opening.header.renewed(contributions, syntax.license)
-    return if renewed == opening.header
-
-    lines[opening.span] = syntax.opening(snippet, renewed.copyrights)
   end
 end

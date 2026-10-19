@@ -7,6 +7,8 @@
 
 require_relative "copyright"
 require_relative "directory_licensing"
+require_relative "existing_header"
+require_relative "missing_header"
 require_relative "spdx_header"
 
 # The header sits between #-- and #++ so RDoc leaves it out of the docs.
@@ -42,12 +44,14 @@ class RubyHeaderSyntax # :nodoc:
         license = $1.strip
         last_tag = index
       when /^#\+\+\s*$/
-        return [SpdxHeader.new(copyrights:, license:), index] if last_tag
+        return ExistingHeader.new(header: SpdxHeader.new(copyrights:, license:), end_line: index) if last_tag
       when /^\s*[^#\s]/
         break
       end
     end
-    [SpdxHeader.new(copyrights:, license:), last_tag] if last_tag
+    return MissingHeader.new unless last_tag
+
+    ExistingHeader.new(header: SpdxHeader.new(copyrights:, license:), end_line: last_tag)
   end
 
   def added(header, lines)

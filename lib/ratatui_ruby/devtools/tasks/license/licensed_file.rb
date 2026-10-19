@@ -6,7 +6,7 @@
 #++
 
 require_relative "../bump/repository"
-require_relative "spdx_header"
+require_relative "header_revision"
 
 class LicensedFile < Data.define(:path, :syntax, :author) # :nodoc:
   def self.changed(syntax, repository: Repository.new)
@@ -28,19 +28,11 @@ class LicensedFile < Data.define(:path, :syntax, :author) # :nodoc:
 
   def annotate
     lines = File.read(path).lines
-    contributions = syntax.contributions(path, lines, author)
-    license = syntax.license_for(path)
-    existing, end_line = syntax.header_in(lines)
+    revision = HeaderRevision.new(path:, lines:, syntax:, author:)
+    syntax.header_in(lines).revise(revision)
+    return unless revision.text
 
-    if existing
-      renewed = existing.renewed(contributions, license)
-      return if renewed == existing
-
-      File.write(path, syntax.replaced(renewed, lines, end_line))
-      puts "Updated: #{path}"
-    else
-      File.write(path, syntax.added(SpdxHeader.of(author, contributions, license), lines))
-      puts "Added header: #{path}"
-    end
+    File.write(path, revision.text)
+    puts revision.report
   end
 end

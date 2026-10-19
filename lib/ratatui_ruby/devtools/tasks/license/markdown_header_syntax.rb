@@ -7,7 +7,9 @@
 
 require_relative "blame"
 require_relative "copyright"
+require_relative "existing_header"
 require_relative "markdown_document"
+require_relative "missing_header"
 require_relative "spdx_header"
 
 class MarkdownHeaderSyntax # :nodoc:
@@ -41,12 +43,14 @@ class MarkdownHeaderSyntax # :nodoc:
 
   def header_in(lines)
     closing = comment_end(lines)
-    return unless closing
+    return MissingHeader.new unless closing
 
     comment = lines[..closing]
     copyrights = comment.grep(COPYRIGHT) { Copyright.new(year: $1.to_i, holder: $2.strip) }
     license = comment.grep(LICENSE_LINE) { $1.strip }.last
-    [SpdxHeader.new(copyrights:, license:), closing] if copyrights.any? || license
+    return MissingHeader.new unless copyrights.any? || license
+
+    ExistingHeader.new(header: SpdxHeader.new(copyrights:, license:), end_line: closing)
   end
 
   def added(header, lines)

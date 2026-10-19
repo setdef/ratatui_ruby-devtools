@@ -8,6 +8,7 @@
 require_relative "markdown_document"
 require_relative "snippet"
 require_relative "snippet_opening"
+require_relative "wrapped_snippet"
 
 # Fenced code blocks, and the code synced into a README between SYNC markers,
 # which the wrapper goes around so syncing doesn't erase it.
@@ -94,7 +95,7 @@ class MarkdownSnippetSyntax # :nodoc:
     opening = SnippetOpening.in(lines, first, opening_end(lines, first))
     return if opening.last + 1 > finish - 1
 
-    Snippet.around(first, finish, code: [opening.last + 1, finish - 1], opening:)
+    WrappedSnippet.new(snippet: Snippet.around(first, finish, code: [opening.last + 1, finish - 1]), opening:)
   end
 
   # The first pass leaves MIT-0 wrappers alone and marks the rest for

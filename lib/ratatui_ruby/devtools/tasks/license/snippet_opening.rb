@@ -26,4 +26,14 @@ class SnippetOpening < Data.define(:first, :last, :header) # :nodoc:
   def span
     first..last
   end
+
+  def copyrights
+    header.copyrights
+  end
+
+  # The opening with its notices renewed, or itself when they already hold.
+  def renewed(contributions, license)
+    renewed = header.renewed(contributions, license)
+    (renewed == header) ? self : with(header: renewed)
+  end
 end

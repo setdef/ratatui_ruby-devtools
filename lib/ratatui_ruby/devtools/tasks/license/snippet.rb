@@ -7,9 +7,8 @@
 
 # A code example inside a file, wrapped from its first to its last line
 # counting from 0, behind the given comment prefix. Its year comes from the
-# code lines alone, which can sit inside markers the wrapper goes around. One
-# already wrapped carries its SnippetOpening.
-class Snippet < Data.define(:first, :last, :prefix, :code, :opening) # :nodoc:
+# code lines alone, which can sit inside markers the wrapper goes around.
+class Snippet < Data.define(:first, :last, :prefix, :code) # :nodoc:
   # REUSE 3.3 requires copyright notices inside a snippet to use the snippet
   # tag. Earlier wrappers used the file tag.
   # REUSE-IgnoreStart
@@ -17,8 +16,8 @@ class Snippet < Data.define(:first, :last, :prefix, :code, :opening) # :nodoc:
   FILE_COPYRIGHT_TAG = "SPDX-FileCopyrightText"
   # REUSE-IgnoreEnd
 
-  def self.around(first, last, prefix: "", code: [first, last], opening: nil)
-    new(first:, last:, prefix:, code:, opening:)
+  def self.around(first, last, prefix: "", code: [first, last])
+    new(first:, last:, prefix:, code:)
   end
 
   # A line of a wrapper's tags, using the snippet copyright tag.
@@ -33,5 +32,13 @@ class Snippet < Data.define(:first, :last, :prefix, :code, :opening) # :nodoc:
 
   def lines_in(file_lines)
     file_lines[first..last]
+  end
+
+  def bare?
+    true
+  end
+
+  def revise(revision)
+    revision.wrap(self)
   end
 end

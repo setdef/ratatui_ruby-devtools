@@ -7,6 +7,8 @@
 
 require_relative "copyright"
 require_relative "directory_licensing"
+require_relative "existing_header"
+require_relative "missing_header"
 require_relative "spdx_header"
 
 class RustHeaderSyntax # :nodoc:
@@ -40,7 +42,9 @@ class RustHeaderSyntax # :nodoc:
         break if end_line || !line.strip.empty?
       end
     end
-    [SpdxHeader.new(copyrights:, license:), end_line || 0] if copyrights.any? || license
+    return MissingHeader.new unless copyrights.any? || license
+
+    ExistingHeader.new(header: SpdxHeader.new(copyrights:, license:), end_line: end_line || 0)
   end
 
   def added(header, lines)
