@@ -30,20 +30,38 @@ class SnippetFile < Data.define(:path, :syntax, :author) # :nodoc:
     # where blame found them.
     blame = Blame.new(path:, contents: lines.join)
     snippets.reverse_each do |snippet|
-      lines.insert(snippet.last + 1, *syntax.closing(snippet))
-      lines.insert(snippet.first, *syntax.opening(snippet, copyrights(blame, snippet)))
+      contributions = blame.contributions([snippet.blame_range], uncommitted_by: author)
+      if snippet.opening
+        renew(lines, snippet, contributions)
+      else
+        wrap(lines, snippet, contributions)
+      end
     end
 
     updated = lines.join
     return if updated == original
 
     File.write(path, updated)
-    puts snippets.empty? ? "Updated: #{path}" : "Updated: #{path} (#{snippets.length} code block(s))"
+    wrapped = snippets.count { |snippet| !snippet.opening }
+    message = if wrapped.zero?
+      "Updated: #{path}"
+    else
+      "Updated: #{path} (#{wrapped} code block(s))"
+    end
+    puts message
   end
 
-  private def copyrights(blame, snippet)
-    blame.contributions([snippet.blame_range], uncommitted_by: author)
-      .map { |contribution| Copyright.of(contribution) }
-      .sort_by(&:holder)
+  private def wrap(lines, snippet, contributions)
+    copyrights = contributions.map { |contribution| Copyright.of(contribution) }.sort_by(&:holder)
+    lines.insert(snippet.last + 1, *syntax.closing(snippet))
+    lines.insert(snippet.first, *syntax.opening(snippet, copyrights))
+  end
+
+  private def renew(lines, snippet, contributions)
+    opening = snippet.opening
+    renewed = opening.header.renewed(contributions, syntax.license)
+    return if renewed == opening.header
+
+    lines[opening.span] = syntax.opening(snippet, renewed.copyrights)
   end
 end

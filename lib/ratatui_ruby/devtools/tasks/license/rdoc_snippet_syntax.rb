@@ -6,6 +6,7 @@
 #++
 
 require_relative "snippet"
+require_relative "snippet_opening"
 
 # RDoc examples are comment lines indented three or more spaces. The SPDX
 # wrapper sits between #-- and #++ so RDoc leaves it out of the docs.
@@ -36,20 +37,19 @@ class RdocSnippetSyntax # :nodoc:
     end
   end
 
-  # Examples not yet wrapped. A one-line example is too small to count.
-  def snippets_in(lines)
-    snippets = []
-    index = 0
-    while index < lines.length
-      prefix = lines[index][EXAMPLE, 1]
-      next index += 1 unless prefix
+  def license
+    LICENSE
+  end
 
-      last = last_line(lines, index, prefix)
-      snippet = Snippet.around(index, last, prefix:)
-      snippets << snippet if last > index && code?(lines, snippet) && !wrapped?(lines, snippet)
-      index = last + 1
+  # Every example, with the opening of those already wrapped. A one-line
+  # example is too small to count.
+  def snippets_in(lines)
+    examples(lines).filter_map do |snippet|
+      next snippet unless wrapped?(lines, snippet)
+
+      opening = opening_of(lines, snippet)
+      snippet.with(opening:) if opening
     end
-    snippets
   end
 
   def opening(snippet, copyrights)
@@ -74,6 +74,28 @@ class RdocSnippetSyntax # :nodoc:
       "#{prefix}#++\n",
     ]
     # REUSE-IgnoreEnd
+  end
+
+  private def examples(lines)
+    examples = []
+    index = 0
+    while index < lines.length
+      prefix = lines[index][EXAMPLE, 1]
+      next index += 1 unless prefix
+
+      last = last_line(lines, index, prefix)
+      example = Snippet.around(index, last, prefix:)
+      examples << example if last > index && code?(lines, example)
+      index = last + 1
+    end
+    examples
+  end
+
+  # The #-- to #++ block just above a wrapped example.
+  private def opening_of(lines, snippet)
+    closing = snippet.first - 1
+    start = (closing - 1).downto(0).find { |index| lines[index].match?(/^#{Regexp.escape(snippet.prefix)}#--\s*$/) }
+    SnippetOpening.in(lines, start, closing) if start
   end
 
   # An example runs on through indented and blank comment lines.

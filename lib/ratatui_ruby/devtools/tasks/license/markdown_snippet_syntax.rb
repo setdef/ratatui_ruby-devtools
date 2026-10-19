@@ -7,6 +7,7 @@
 
 require_relative "markdown_document"
 require_relative "snippet"
+require_relative "snippet_opening"
 
 # Fenced code blocks, and the code synced into a README between SYNC markers,
 # which the wrapper goes around so syncing doesn't erase it.
@@ -30,6 +31,10 @@ class MarkdownSnippetSyntax # :nodoc:
 
   def excludes?(path)
     EXCLUDED.any? { |excluded| path.end_with?(excluded) }
+  end
+
+  def license
+    LICENSE
   end
 
   # Without the wrappers that don't license their code MIT-0, so the code they
@@ -83,8 +88,18 @@ class MarkdownSnippetSyntax # :nodoc:
     lines[first].include?("-->") && lines[first + 1]&.include?("<!--")
   end
 
+  # A wrapper from its SnippetBegin to its SnippetEnd, with the code between
+  # its opening tags and its end.
+  private def wrapped_region(lines, first, finish)
+    opening = SnippetOpening.in(lines, first, opening_end(lines, first))
+    return if opening.last + 1 > finish - 1
+
+    Snippet.around(first, finish, code: [opening.last + 1, finish - 1], opening:)
+  end
+
   # The first pass leaves MIT-0 wrappers alone and marks the rest for
-  # removal. The second, after removal, skips every wrapper.
+  # removal. The second, after removal, reports the wrappers left with their
+  # openings.
   private def scan(lines, first_pass:)
     document = MarkdownDocument.new(lines)
     regions = []
@@ -94,6 +109,8 @@ class MarkdownSnippetSyntax # :nodoc:
       if lines[index].include?("SPDX-SnippetBegin")
         finish = index.upto(lines.length - 1).find { |later| lines[later].include?("SPDX-SnippetEnd") }
         if !first_pass
+          wrapped = wrapped_region(lines, index, finish) if finish
+          regions << wrapped if wrapped
           index = (finish || lines.length) + 1
           next
         elsif finish
