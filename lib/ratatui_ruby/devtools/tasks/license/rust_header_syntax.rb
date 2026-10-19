@@ -30,21 +30,23 @@ class RustHeaderSyntax # :nodoc:
   def header_in(lines)
     copyrights = []
     license = nil
-    end_line = nil
+    last_tag = nil
     lines.each_with_index do |line, index|
       case line
-      when COPYRIGHT then copyrights << Copyright.new(year: $1.to_i, holder: $2.strip)
+      when COPYRIGHT
+        copyrights << Copyright.new(year: $1.to_i, holder: $2.strip)
+        last_tag = index
       when LICENSE
         license = $1.strip
-        end_line = index
+        last_tag = index
       else
         next if line.start_with?("//")
-        break if end_line || !line.strip.empty?
+        break if license || !line.strip.empty?
       end
     end
-    return MissingHeader.new unless copyrights.any? || license
+    return MissingHeader.new unless last_tag
 
-    ExistingHeader.new(header: SpdxHeader.new(copyrights:, license:), end_line: end_line || 0)
+    ExistingHeader.new(header: SpdxHeader.new(copyrights:, license:), end_line: last_tag)
   end
 
   def added(header, lines)
