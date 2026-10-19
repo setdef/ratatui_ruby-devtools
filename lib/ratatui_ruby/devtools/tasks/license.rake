@@ -9,6 +9,7 @@ require_relative "license/changed_files"
 require_relative "license/licensed_file"
 require_relative "license/markdown_header_syntax"
 require_relative "license/markdown_snippet_syntax"
+require_relative "license/rbs_header_syntax"
 require_relative "license/rdoc_snippet_syntax"
 require_relative "license/ruby_header_syntax"
 require_relative "license/rust_header_syntax"
@@ -19,6 +20,7 @@ namespace :license do
     {
       md: ["Ensure markdown files have correct CC-BY-SA-4.0 headers", MarkdownHeaderSyntax],
       rb: ["Ensure Ruby files have correct SPDX headers", RubyHeaderSyntax],
+      rbs: ["Ensure RBS files have correct SPDX headers", RbsHeaderSyntax],
       rs: ["Ensure Rust files have correct SPDX headers", RustHeaderSyntax],
     }.each do |name, (description, syntax)|
       desc description
@@ -28,7 +30,7 @@ namespace :license do
     end
 
     desc "Ensure all files have correct license headers"
-    task all: %w[md rb rs]
+    task all: %w[md rb rbs rs]
   end
 
   namespace :snippets do

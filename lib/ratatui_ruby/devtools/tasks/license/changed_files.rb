@@ -7,11 +7,12 @@
 
 require_relative "../bump/repository"
 require_relative "markdown_files"
+require_relative "rbs_files"
 require_relative "ruby_files"
 require_relative "rust_files"
 
 class ChangedFiles < Data.define(:repository) # :nodoc:
-  LANGUAGES = [MarkdownFiles, RubyFiles, RustFiles].freeze
+  LANGUAGES = [MarkdownFiles, RubyFiles, RbsFiles, RustFiles].freeze
 
   # Licenses what changed and says what it did.
   def license
