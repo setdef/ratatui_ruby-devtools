@@ -26,6 +26,6 @@ class MarkdownFiles < Data.define(:files) # :nodoc:
   def license
     files.each(&:annotate)
     syntax = MarkdownSnippetSyntax.new
-    files.each { |file| SnippetFile.new(path: file.path, syntax:).annotate }
+    files.each { |file| SnippetFile.new(path: file.path, syntax:, author: file.author).annotate }
   end
 end

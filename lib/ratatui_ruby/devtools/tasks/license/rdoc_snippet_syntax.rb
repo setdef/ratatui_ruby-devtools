@@ -10,7 +10,6 @@ require_relative "snippet"
 # RDoc examples are comment lines indented three or more spaces. The SPDX
 # wrapper sits between #-- and #++ so RDoc leaves it out of the docs.
 class RdocSnippetSyntax # :nodoc:
-  HOLDER = "Kerrick Long"
   LICENSE = "MIT-0"
   EXAMPLE = /^(\s*)#(   +)(\S.*)$/
 
@@ -26,8 +25,15 @@ class RdocSnippetSyntax # :nodoc:
     false
   end
 
+  # Existing wrappers with their copyright notices under the snippet tag.
   def cleaned(lines)
-    lines
+    in_tags = false
+    lines.map do |line|
+      in_tags = true if line.match?(/^\s*# SPDX-SnippetBegin\s*$/)
+      cleaned_line = in_tags ? Snippet.tag(line) : line
+      in_tags = false if line.match?(/^\s*#\+\+\s*$/)
+      cleaned_line
+    end
   end
 
   # Examples not yet wrapped. A one-line example is too small to count.
@@ -46,13 +52,13 @@ class RdocSnippetSyntax # :nodoc:
     snippets
   end
 
-  def opening(snippet, year)
+  def opening(snippet, copyrights)
     prefix = snippet.prefix
     # REUSE-IgnoreStart
     [
       "#{prefix}#--\n",
       "#{prefix}# SPDX-SnippetBegin\n",
-      "#{prefix}# SPDX-FileCopyrightText: #{year} #{HOLDER}\n",
+      *copyrights.map { |copyright| "#{prefix}# #{Snippet::COPYRIGHT_TAG}: #{copyright}\n" },
       "#{prefix}# SPDX-License-Identifier: #{LICENSE}\n",
       "#{prefix}#++\n",
     ]

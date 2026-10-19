@@ -7,10 +7,15 @@
 
 require_relative "../bump/repository"
 require_relative "blame"
+require_relative "copyright"
 
-class SnippetFile < Data.define(:path, :syntax) # :nodoc:
+class SnippetFile < Data.define(:path, :syntax, :author) # :nodoc:
   def self.tracked(paths, syntax, repository: Repository.new)
-    repository.tracked_files_for(paths, syntax).map { |path| new(path:, syntax:) }
+    files = repository.tracked_files_for(paths, syntax)
+    return [] if files.empty?
+
+    author = repository.author
+    files.map { |path| new(path:, syntax:, author:) }
   end
 
   def annotate
@@ -25,15 +30,20 @@ class SnippetFile < Data.define(:path, :syntax) # :nodoc:
     # where blame found them.
     blame = Blame.new(path:, contents: lines.join)
     snippets.reverse_each do |snippet|
-      year = blame.latest_year(snippet.blame_range)
       lines.insert(snippet.last + 1, *syntax.closing(snippet))
-      lines.insert(snippet.first, *syntax.opening(snippet, year))
+      lines.insert(snippet.first, *syntax.opening(snippet, copyrights(blame, snippet)))
     end
 
     updated = lines.join
     return if updated == original
 
     File.write(path, updated)
-    puts "Updated: #{path} (#{snippets.length} code block(s))"
+    puts snippets.empty? ? "Updated: #{path}" : "Updated: #{path} (#{snippets.length} code block(s))"
+  end
+
+  private def copyrights(blame, snippet)
+    blame.contributions([snippet.blame_range], uncommitted_by: author)
+      .map { |contribution| Copyright.new(year: contribution.year, holder: contribution.author.to_s) }
+      .sort_by(&:holder)
   end
 end

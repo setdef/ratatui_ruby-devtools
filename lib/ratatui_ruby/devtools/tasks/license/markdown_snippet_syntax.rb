@@ -11,7 +11,6 @@ require_relative "snippet"
 # Fenced code blocks, and the code synced into a README between SYNC markers,
 # which the wrapper goes around so syncing doesn't erase it.
 class MarkdownSnippetSyntax # :nodoc:
-  HOLDER = "Kerrick Long"
   LICENSE = "MIT-0"
   EXCLUDED = [
     "doc/contributors/v1.0.0_blockers.md",
@@ -33,8 +32,9 @@ class MarkdownSnippetSyntax # :nodoc:
     EXCLUDED.any? { |excluded| path.end_with?(excluded) }
   end
 
-  # Without the wrappers someone else's tooling wrote, so the code they held
-  # can be wrapped again.
+  # Without the wrappers that don't license their code MIT-0, so the code they
+  # held can be wrapped again, and with the copyright notices of the rest
+  # under the snippet tag.
   def cleaned(lines)
     _, removals = scan(lines, first_pass: true)
     lines = lines.dup
@@ -42,7 +42,33 @@ class MarkdownSnippetSyntax # :nodoc:
       lines.delete_at(last)
       (opening_end(lines, first) - first + 1).times { lines.delete_at(first) }
     end
+    lines.each_index.select { |index| lines[index].include?("SPDX-SnippetBegin") }.each do |first|
+      first.upto(opening_end(lines, first)) { |index| lines[index] = Snippet.tag(lines[index]) }
+    end
     lines
+  end
+
+  def snippets_in(lines)
+    regions, = scan(lines, first_pass: false)
+    regions
+  end
+
+  def opening(_snippet, copyrights)
+    # REUSE-IgnoreStart
+    [
+      "<!-- SPDX-SnippetBegin -->\n",
+      "<!--\n",
+      *copyrights.map { |copyright| "  #{Snippet::COPYRIGHT_TAG}: #{copyright}\n" },
+      "  SPDX-License-Identifier: #{LICENSE}\n",
+      "-->\n",
+    ]
+    # REUSE-IgnoreEnd
+  end
+
+  def closing(_snippet)
+    # REUSE-IgnoreStart
+    ["<!-- SPDX-SnippetEnd -->\n"]
+    # REUSE-IgnoreEnd
   end
 
   # The last line of the opening wrapper at +first+. A SnippetBegin comment
@@ -57,30 +83,7 @@ class MarkdownSnippetSyntax # :nodoc:
     lines[first].include?("-->") && lines[first + 1]&.include?("<!--")
   end
 
-  def snippets_in(lines)
-    regions, = scan(lines, first_pass: false)
-    regions
-  end
-
-  def opening(_snippet, year)
-    # REUSE-IgnoreStart
-    [
-      "<!-- SPDX-SnippetBegin -->\n",
-      "<!--\n",
-      "  SPDX-FileCopyrightText: #{year} #{HOLDER}\n",
-      "  SPDX-License-Identifier: #{LICENSE}\n",
-      "-->\n",
-    ]
-    # REUSE-IgnoreEnd
-  end
-
-  def closing(_snippet)
-    # REUSE-IgnoreStart
-    ["<!-- SPDX-SnippetEnd -->\n"]
-    # REUSE-IgnoreEnd
-  end
-
-  # The first pass leaves wrappers it recognizes alone and marks the rest for
+  # The first pass leaves MIT-0 wrappers alone and marks the rest for
   # removal. The second, after removal, skips every wrapper.
   private def scan(lines, first_pass:)
     document = MarkdownDocument.new(lines)
@@ -94,7 +97,7 @@ class MarkdownSnippetSyntax # :nodoc:
           index = (finish || lines.length) + 1
           next
         elsif finish
-          removals << [index, finish] unless ours?(lines, index)
+          removals << [index, finish] unless licensed?(lines, index)
           index = finish + 1
           next
         end
@@ -135,11 +138,13 @@ class MarkdownSnippetSyntax # :nodoc:
     Snippet.around(start, finish) if finish
   end
 
-  private def ours?(lines, begin_line)
-    header = lines[(begin_line + 1)..].take_while { |line| !line.include?("-->") }
+  # A wrapper that already credits someone under MIT-0 stays, whoever it
+  # credits.
+  private def licensed?(lines, begin_line)
+    tags = lines[(begin_line + 1)..].take_while { |line| !line.include?("-->") }
     # REUSE-IgnoreStart
-    header.any? { |line| line.include?(HOLDER) && line.include?("SPDX-FileCopyrightText") } &&
-      header.any? { |line| line.include?("MIT-0") && line.include?("SPDX-License-Identifier") }
+    tags.any? { |line| line.include?(Snippet::COPYRIGHT_TAG) || line.include?(Snippet::FILE_COPYRIGHT_TAG) } &&
+      tags.any? { |line| line.include?(LICENSE) && line.include?("SPDX-License-Identifier") }
     # REUSE-IgnoreEnd
   end
 end

@@ -23,21 +23,22 @@ class Blame < Data.define(:path, :contents) # :nodoc:
   # Each author once, with the latest year they touched the lines.
   # [line_ranges] Pairs of first and last line numbers, counting from 1.
   #   Omit them to blame the whole file.
-  def contributions(line_ranges = nil)
-    found = (line_ranges || [nil]).flat_map { |range| contributions_in(range) }
+  # [uncommitted_by] The author to credit, this year, for lines not yet
+  #   committed. Without one, those lines count for nobody.
+  def contributions(line_ranges = nil, uncommitted_by: nil)
+    found = (line_ranges || [nil]).flat_map { |range| contributions_in(range, uncommitted_by) }
     found.group_by(&:author).map { |_, same| same.max_by(&:year) }
   end
 
-  # The latest year anyone touched the lines, counting uncommitted lines as
-  # this year, or this year when nothing is known.
-  # [range] A pair of first and last line numbers, counting from 1.
-  def latest_year(range)
-    commits_in(range).values.filter_map { |commit| commit[:year] }.max || Date.today.year
-  end
+  private def contributions_in(range, uncommitted_by)
+    # A file git doesn't track yet is uncommitted throughout.
+    commits = commits_in(range) || { UNCOMMITTED => {} }
+    commits.flat_map do |commit, author|
+      if commit == UNCOMMITTED
+        next [] unless uncommitted_by
 
-  private def contributions_in(range)
-    commits_in(range).flat_map do |commit, author|
-      next [] if commit == UNCOMMITTED
+        next [Contribution.new(author: uncommitted_by, year: Date.today.year)]
+      end
 
       year = author[:year] || Date.today.year
       authors = (author[:name] && author[:email]) ? [[author[:name].strip, author[:email].strip]] : []
@@ -51,7 +52,8 @@ class Blame < Data.define(:path, :contents) # :nodoc:
     command = %w[git blame --porcelain]
     command += ["-L", range.join(",")] if range
     command += ["--contents", "-"] if contents
-    output, _status = Open3.capture2(*command, "--", path, stdin_data: contents.to_s)
+    output, status = Open3.capture2(*command, "--", path, stdin_data: contents.to_s, err: File::NULL)
+    return unless status.success?
 
     commits = {}
     commit = nil

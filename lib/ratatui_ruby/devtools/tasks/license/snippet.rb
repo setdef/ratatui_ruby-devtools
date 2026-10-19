@@ -9,8 +9,20 @@
 # counting from 0, behind the given comment prefix. Its year comes from the
 # code lines alone, which can sit inside markers the wrapper goes around.
 class Snippet < Data.define(:first, :last, :prefix, :code) # :nodoc:
+  # REUSE 3.3 requires copyright notices inside a snippet to use the snippet
+  # tag. Earlier wrappers used the file tag.
+  # REUSE-IgnoreStart
+  COPYRIGHT_TAG = "SPDX-SnippetCopyrightText"
+  FILE_COPYRIGHT_TAG = "SPDX-FileCopyrightText"
+  # REUSE-IgnoreEnd
+
   def self.around(first, last, prefix: "", code: [first, last])
     new(first:, last:, prefix:, code:)
+  end
+
+  # A line of a wrapper's tags, using the snippet copyright tag.
+  def self.tag(line)
+    line.sub(FILE_COPYRIGHT_TAG, COPYRIGHT_TAG)
   end
 
   # The code lines as git blame counts them, from 1.

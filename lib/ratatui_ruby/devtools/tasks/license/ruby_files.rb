@@ -31,7 +31,7 @@ class RubyFiles < Data.define(:files) # :nodoc:
   # RDoc examples only appear in the documented library.
   private def library
     syntax = RdocSnippetSyntax.new
-    files.map(&:path).select { |path| path.start_with?("lib/") && path.end_with?(".rb") }
-      .map { |path| SnippetFile.new(path:, syntax:) }
+    files.select { |file| file.path.start_with?("lib/") && file.path.end_with?(".rb") }
+      .map { |file| SnippetFile.new(path: file.path, syntax:, author: file.author) }
   end
 end
