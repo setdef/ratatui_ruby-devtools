@@ -42,9 +42,8 @@ class RubyHeaderSyntax # :nodoc:
 
   def added(header, lines)
     frozen = frozen_string_literal_in(lines)
-    return "#{frozen}\n#{block(header)}\n#{lines.drop(1).join}" if frozen
-
-    "#{FROZEN_STRING_LITERAL}\n#{block(header)}\n#{lines.join}"
+    body = (frozen ? lines.drop(1) : lines).drop_while { |line| line.strip.empty? }
+    "#{frozen || FROZEN_STRING_LITERAL}\n#{block(header)}\n#{body.join}"
   end
 
   def replaced(header, lines, end_line)
