@@ -33,7 +33,7 @@ class LicensedFile < Data.define(:path, :syntax, :author) # :nodoc:
     existing, end_line = syntax.header_in(lines)
 
     if existing
-      renewed = existing.renewed(author, contributions, license)
+      renewed = existing.renewed(contributions, license)
       return if renewed == existing
 
       File.write(path, syntax.replaced(renewed, lines, end_line))

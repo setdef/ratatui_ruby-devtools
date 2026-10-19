@@ -8,8 +8,13 @@
 require "date"
 
 class Copyright < Data.define(:year, :holder) # :nodoc:
-  def self.of(author, contributions)
-    new(year: latest_year(contributions, [author.name, author.email]) || Date.today.year, holder: author.to_s)
+  def self.of(contribution)
+    new(year: contribution.year, holder: contribution.author.to_s)
+  end
+
+  # For work with no history to credit, such as an empty file.
+  def self.yours(author)
+    new(year: Date.today.year, holder: author.to_s)
   end
 
   # A holder matches an author when any word of the holder appears in the

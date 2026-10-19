@@ -43,7 +43,7 @@ class SnippetFile < Data.define(:path, :syntax, :author) # :nodoc:
 
   private def copyrights(blame, snippet)
     blame.contributions([snippet.blame_range], uncommitted_by: author)
-      .map { |contribution| Copyright.new(year: contribution.year, holder: contribution.author.to_s) }
+      .map { |contribution| Copyright.of(contribution) }
       .sort_by(&:holder)
   end
 end
