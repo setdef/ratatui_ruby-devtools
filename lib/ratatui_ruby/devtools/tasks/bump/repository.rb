@@ -41,16 +41,21 @@ class Repository # :nodoc:
   end
 
   # The tracked files a syntax covers, under the given paths, or everywhere
-  # it looks by default. A path that isn't a directory is taken as it is.
-  # In a git pathspec * crosses directories, so dir/*.rb reaches every depth,
-  # while dir/**/*.rb would skip the files directly inside dir.
+  # it looks by default. A path that isn't a directory is taken as it is, if
+  # it's written in the syntax. In a git pathspec * crosses directories, so
+  # dir/*.rb reaches every depth, while dir/**/*.rb would skip the files
+  # directly inside dir.
   def tracked_files_for(paths, syntax)
     return syntax.tracked_patterns.flat_map { |pattern| tracked_files(pattern) }.uniq if paths.empty?
 
     paths.flat_map do |path|
-      next path unless File.directory?(path)
-
-      syntax.extensions.flat_map { |extension| tracked_files("#{path}/*.#{extension}") }
+      if File.directory?(path)
+        syntax.extensions.flat_map { |extension| tracked_files("#{path}/*.#{extension}") }
+      elsif syntax.extensions.include?(File.extname(path).delete_prefix("."))
+        [path]
+      else
+        []
+      end
     end
   end
 
