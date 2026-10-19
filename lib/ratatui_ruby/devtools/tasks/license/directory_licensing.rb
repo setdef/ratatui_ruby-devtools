@@ -7,8 +7,9 @@
 
 require_relative "blame"
 
-# Source code takes its license from the directory it lives in, and every line
-# of it counts toward an author's copyright year.
+# Source code takes its license from the directory it lives in, and
+# everything below its license header counts toward an author's copyright
+# year.
 module DirectoryLicensing # :nodoc:
   def covers?(path)
     extensions.include?(File.extname(path).delete_prefix(".")) &&
@@ -32,8 +33,14 @@ module DirectoryLicensing # :nodoc:
     end
   end
 
-  def contributions(path, _lines)
-    Blame.new(path).contributions
+  # Editing the license header, as when relicensing, isn't authorship of the
+  # file.
+  def contributions(path, lines)
+    _, end_line = header_in(lines)
+    return Blame.new(path).contributions unless end_line
+    return [] if end_line + 1 >= lines.length
+
+    Blame.new(path).contributions([[end_line + 2, lines.length]])
   end
 
   private def after_header(lines, end_line)
