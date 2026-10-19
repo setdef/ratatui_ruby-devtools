@@ -26,10 +26,6 @@ class RdocSnippetSyntax # :nodoc:
     false
   end
 
-  def pending?(lines)
-    snippets_in(lines).any?
-  end
-
   def cleaned(lines)
     lines
   end

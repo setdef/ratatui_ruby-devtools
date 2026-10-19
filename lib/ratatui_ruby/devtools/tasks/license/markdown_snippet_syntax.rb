@@ -33,11 +33,6 @@ class MarkdownSnippetSyntax # :nodoc:
     EXCLUDED.any? { |excluded| path.end_with?(excluded) }
   end
 
-  def pending?(lines)
-    regions, removals = scan(lines, first_pass: true)
-    regions.any? || removals.any?
-  end
-
   # Without the wrappers someone else's tooling wrote, so the code they held
   # can be wrapped again.
   def cleaned(lines)

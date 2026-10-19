@@ -16,10 +16,8 @@ class SnippetFile < Data.define(:path, :syntax) # :nodoc:
   def annotate
     return if syntax.excludes?(path)
 
-    original = File.read(path).lines
-    return unless syntax.pending?(original)
-
-    lines = syntax.cleaned(original)
+    original = File.read(path)
+    lines = syntax.cleaned(original.lines)
     snippets = syntax.snippets_in(lines)
 
     # Blame reads the cleaned lines the snippets were found in, not the file
@@ -32,7 +30,10 @@ class SnippetFile < Data.define(:path, :syntax) # :nodoc:
       lines.insert(snippet.first, *syntax.opening(snippet, year))
     end
 
-    File.write(path, lines.join)
+    updated = lines.join
+    return if updated == original
+
+    File.write(path, updated)
     puts "Updated: #{path} (#{snippets.length} code block(s))"
   end
 end
