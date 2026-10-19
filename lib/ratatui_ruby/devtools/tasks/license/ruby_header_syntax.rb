@@ -27,17 +27,27 @@ class RubyHeaderSyntax # :nodoc:
     %w[lib ext test examples tasks bin sig]
   end
 
+  # The header is in the comments the file opens with. Without its #++, it
+  # ends at its last tag.
   def header_in(lines)
     copyrights = []
     license = nil
+    last_tag = nil
     lines.each_with_index do |line, index|
       case line
-      when COPYRIGHT then copyrights << Copyright.new(year: $1.to_i, holder: $2.strip)
-      when LICENSE then license = $1.strip
-      when /^#\+\+\s*$/ then return [SpdxHeader.new(copyrights:, license:), index] if copyrights.any? || license
+      when COPYRIGHT
+        copyrights << Copyright.new(year: $1.to_i, holder: $2.strip)
+        last_tag = index
+      when LICENSE
+        license = $1.strip
+        last_tag = index
+      when /^#\+\+\s*$/
+        return [SpdxHeader.new(copyrights:, license:), index] if last_tag
+      when /^\s*[^#\s]/
+        break
       end
     end
-    [SpdxHeader.new(copyrights:, license:), 0] if copyrights.any? || license
+    [SpdxHeader.new(copyrights:, license:), last_tag] if last_tag
   end
 
   def added(header, lines)
