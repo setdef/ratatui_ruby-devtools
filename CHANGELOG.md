@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **`rake reuse:normalize_ruby`**: It moved the bare SPDX lines the REUSE Tool wrote into Ruby files below the magic comment and between `#--` and `#++`. `rake reuse:fix` now writes Ruby headers that way itself, so there is nothing left to normalize.
+
 ## [0.2.1] - 2026-02-16
 
 ### Added
