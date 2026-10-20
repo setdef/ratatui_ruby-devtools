@@ -49,10 +49,9 @@ class VersionedDocumentation
     custom_css_path = File.absolute_path("doc/custom.css")
 
     @version.checkout(globs:) do |source_path|
-      # Each version builds with its own Ruby, bundle, and tasks, so upgrading
-      # RDoc or the doc tasks on trunk never changes an earlier version's docs.
-      tree = SourceTree.new(path: source_path)
-      tree.upgrade_rdoc_to(RDOC_FLOOR)
+      # Each version builds with its own Ruby, bundle, and tasks where it can,
+      # so upgrading RDoc or the doc tasks on trunk doesn't change its docs.
+      tree = SourceTree.new(path: source_path).buildable(RDOC_FLOOR)
 
       Dir.chdir(source_path) do
         title = "#{project_name} #{@version.name}"
@@ -61,7 +60,7 @@ class VersionedDocumentation
         # Use rake rerdoc to ensure copy_examples runs
         # Set environment variables to override rdoc settings
         success = tree.run(
-          "bundle install --quiet && bundle exec rake rerdoc",
+          "bundle exec rake rerdoc",
           {
             "RDOC_OUTPUT" => absolute_path,
             "RDOC_TITLE" => title,
