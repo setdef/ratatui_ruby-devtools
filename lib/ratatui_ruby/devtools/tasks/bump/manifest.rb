@@ -18,27 +18,16 @@ require_relative "sem_ver"
 #
 # [path] The file path.
 # [pattern] A regex with lookarounds to match the version string.
-# [primary] Whether this is the primary source of truth.
 #
 # === Example
 #
 #   manifest = Manifest.new(
 #     path: "lib/my_gem/version.rb",
-#     pattern: /(?<=VERSION = ")[^"]+(?=")/,
-#     primary: true
+#     pattern: /(?<=VERSION = ")[^"]+(?=")/
 #   )
 #   manifest.version.to_s  # => "1.2.3"
 #
-class Manifest < Data.define(:path, :pattern, :primary)
-  # Creates a new Manifest.
-  #
-  # [path] The file path.
-  # [pattern] A regex with lookarounds to match the version string.
-  # [primary] Whether this is the primary source of truth.
-  def initialize(path:, pattern:, primary: false)
-    super
-  end
-
+class Manifest < Data.define(:path, :pattern)
   # Reads the file content.
   def read
     File.read(path)

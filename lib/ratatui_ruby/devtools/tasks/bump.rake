@@ -8,9 +8,7 @@
 require "rubygems"
 
 require_relative "bump/sem_ver"
-require_relative "bump/manifest"
 require_relative "bump/ruby_gem"
-require_relative "bump/rust_crate"
 require_relative "bump/release_from_trunk"
 require_relative "bump/patch_release"
 require_relative "bump/unbranched_release"
@@ -18,12 +16,11 @@ require_relative "bump/unbranched_release"
 namespace :bump do
   # Auto-discover gem configuration
   def devtools_gem
-    @devtools_gem ||= begin
-      crate = RustCrate.of(RatatuiRuby::Devtools.gem_name)
-      version = Manifest.new(path: RatatuiRuby::Devtools.version_file, pattern: /(?<=VERSION = ")[^"]+(?=")/, primary: true)
-
-      RubyGem.new(manifests: [version, *crate.manifests], crate:)
-    end
+    @devtools_gem ||= RubyGem.new(
+      name: RatatuiRuby::Devtools.gem_name,
+      gemspec_file: RatatuiRuby::Devtools.gemspec_file,
+      version_file: RatatuiRuby::Devtools.version_file
+    )
   end
 
   desc "Bump major version"
