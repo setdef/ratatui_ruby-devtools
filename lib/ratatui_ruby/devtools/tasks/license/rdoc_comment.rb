@@ -38,12 +38,11 @@ class RdocComment < Data.define(:first, :prefix, :lines) # :nodoc:
     end
   end
 
+  # An :include: directive names a file RDoc would read in, but it holds no
+  # example from this one.
   private def markup
-    comment = RDoc::Comment.new(lines.join, nil, :ruby)
-    comment.remove_private
-    comment.normalize
-    comment.extract_call_seq
-    comment.text
+    text, = RDoc::Comment.parse(lines.map { |line| line.delete_prefix(prefix) }.join, nil, first, :ruby) { "" }
+    text
   end
 
   private def code_at?(index, code)
