@@ -14,13 +14,20 @@ class Licensing < Data.define(:snippets, :linked, :runtime, :non_runtime) # :nod
   SNIPPET = "MIT-0"
 
   def self.current
-    gemspec = Gem::Specification.load(RatatuiRuby::Devtools.gemspec_file)
-    new(
+    of(
+      Gem::Specification.load(RatatuiRuby::Devtools.gemspec_file),
       snippets: RatatuiRuby::Devtools.snippet_paths,
-      linked: [*gemspec.require_paths, *gemspec.extensions.map { |extension| File.dirname(extension) }]
-        .map { |directory| "#{directory}/" },
-      runtime: gemspec.licenses.join(" OR "),
       non_runtime: RatatuiRuby::Devtools.non_runtime_license
+    )
+  end
+
+  def self.of(spec, snippets:, non_runtime:)
+    new(
+      snippets:,
+      linked: [*spec.require_paths, *spec.extensions.map { |extension| File.dirname(extension) }]
+        .map { |directory| "#{directory}/" },
+      runtime: spec.licenses.join(" OR "),
+      non_runtime:
     )
   end
 

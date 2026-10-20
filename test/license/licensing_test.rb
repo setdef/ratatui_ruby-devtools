@@ -61,6 +61,20 @@ class LicensingTest < DevtoolsTest
     assert_equal "LGPL-3.0-or-later", licensing.license_for("lib/fixture.rb")
   end
 
+  def test_reads_what_apps_link_and_its_license_from_a_spec
+    spec = Gem::Specification.new do |gem|
+      gem.licenses = %w[MIT Apache-2.0]
+      gem.require_paths = %w[lib]
+      gem.extensions = %w[ext/fixture/extconf.rb]
+    end
+    licensing = Licensing.of(spec, snippets: %w[examples/widget_], non_runtime: "AGPL-3.0-or-later")
+
+    assert_equal "MIT OR Apache-2.0", licensing.license_for("lib/fixture.rb")
+    assert_equal "MIT OR Apache-2.0", licensing.license_for("ext/fixture/src/lib.rs")
+    assert_equal "MIT-0", licensing.license_for("examples/widget_a/app.rb")
+    assert_equal "AGPL-3.0-or-later", licensing.license_for("tasks/a.rake")
+  end
+
   def test_header_syntaxes_license_by_the_licensing_they_are_given
     licensing = Licensing.new(snippets: [], linked: ["lib/"], runtime: "MIT", non_runtime: "Apache-2.0")
 
