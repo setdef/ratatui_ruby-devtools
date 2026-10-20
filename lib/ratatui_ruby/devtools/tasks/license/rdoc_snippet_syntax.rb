@@ -5,15 +5,15 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
+require_relative "rdoc_comment"
 require_relative "snippet"
 require_relative "snippet_opening"
 require_relative "wrapped_snippet"
 
-# RDoc examples are comment lines indented three or more spaces. The SPDX
-# wrapper sits between #-- and #++ so RDoc leaves it out of the docs.
+# The SPDX wrapper sits between #-- and #++ so RDoc leaves it out of the
+# docs.
 class RdocSnippetSyntax # :nodoc:
   LICENSE = "MIT-0"
-  EXAMPLE = /^(\s*)#(   +)(\S.*)$/
 
   def extensions
     %w[rb]
@@ -27,30 +27,30 @@ class RdocSnippetSyntax # :nodoc:
     false
   end
 
-  # Existing wrappers with their copyright notices under the snippet tag.
+  # Existing wrappers with their copyright notices under the snippet tag,
+  # without the blank lines that once followed their code inside them, and
+  # only around text RDoc shows as code.
   def cleaned(lines)
     in_tags = false
-    lines.map do |line|
+    tagged = lines.map do |line|
       in_tags = true if line.match?(/^\s*# SPDX-SnippetBegin\s*$/)
       cleaned_line = in_tags ? Snippet.tag(line) : line
       in_tags = false if line.match?(/^\s*#\+\+\s*$/)
       cleaned_line
     end
+    without_wrappers_around_prose(blanks_after_wrappers(tagged))
   end
 
   def license
     LICENSE
   end
 
-  # Every example, with the opening of those already wrapped. A one-line
-  # example is too small to count.
+  # A wrapper marks its own snippet, whatever RDoc makes of the code inside
+  # it. RDoc finds the examples that have no wrapper yet.
   def snippets_in(lines)
-    examples(lines).filter_map do |snippet|
-      next snippet unless wrapped?(lines, snippet)
-
-      opening = opening_of(lines, snippet)
-      WrappedSnippet.new(snippet:, opening:) if opening
-    end
+    wrapped = wrapped_in(lines)
+    bare = examples(lines).reject { |example| wrapped.any? { |snippet| snippet.covers?(example) } }
+    (wrapped + bare).sort_by(&:first)
   end
 
   def opening(snippet, copyrights)
@@ -78,40 +78,46 @@ class RdocSnippetSyntax # :nodoc:
   end
 
   private def examples(lines)
-    examples = []
-    index = 0
-    while index < lines.length
-      prefix = lines[index][EXAMPLE, 1]
-      next index += 1 unless prefix
+    RdocComment.all_in(lines).flat_map(&:examples)
+  end
 
-      last = last_line(lines, index, prefix)
-      example = Snippet.around(index, last, prefix:)
-      examples << example if last > index && code?(lines, example)
-      index = last + 1
+  # The code between each SnippetBegin's #++ and its SnippetEnd's #--.
+  private def wrapped_in(lines)
+    lines.each_index.filter_map do |index|
+      next unless lines[index].match?(/^\s*# SPDX-SnippetBegin\s*$/)
+
+      prefix = lines[index][/\A\s*/]
+      opened = (index + 1).upto(lines.length - 1).find { |line| lines[line].match?(/^#{Regexp.escape(prefix)}#\+\+\s*$/) }
+      ended = opened && (opened + 1).upto(lines.length - 1).find { |line| lines[line].match?(/^\s*# SPDX-SnippetEnd\s*$/) }
+      next unless ended && ended - 2 > opened
+
+      snippet = Snippet.around(opened + 1, ended - 2, prefix:)
+      WrappedSnippet.new(snippet:, opening: SnippetOpening.in(lines, index - 1, opened))
     end
-    examples
   end
 
-  # The #-- to #++ block just above a wrapped example.
-  private def opening_of(lines, snippet)
-    closing = snippet.first - 1
-    start = (closing - 1).downto(0).find { |index| lines[index].match?(/^#{Regexp.escape(snippet.prefix)}#--\s*$/) }
-    SnippetOpening.in(lines, start, closing) if start
+  # Wrappers once went around every indented comment, list items' text
+  # included. A wrapper whose lines RDoc shows as prose comes off.
+  private def without_wrappers_around_prose(lines)
+    code = examples(lines).map(&:first)
+    prose = wrapped_in(lines).reject { |wrapped| code.include?(wrapped.first) }
+    prose.reverse_each.with_object(lines.dup) do |wrapped, unwrapped|
+      ended = wrapped.snippet.last + 1
+      unwrapped.slice!(ended..(ended + 2))
+      unwrapped.slice!(wrapped.opening.span)
+    end
   end
 
-  # An example runs on through indented and blank comment lines.
-  private def last_line(lines, first, prefix)
-    continuation = /^#{Regexp.escape(prefix)}#(   +|\s*$)/
-    last = first
-    last += 1 while last + 1 < lines.length && lines[last + 1].match?(continuation)
-    last
-  end
+  # Blank comment lines after an example aren't part of it, as RDoc reads it.
+  private def blanks_after_wrappers(lines)
+    lines = lines.dup
+    lines.each_index do |index|
+      next unless lines[index].match?(/^\s*#--\s*$/) && lines[index + 1]&.match?(/^\s*# SPDX-SnippetEnd\s*$/)
 
-  private def code?(lines, snippet)
-    snippet.lines_in(lines).any? { |line| line.match?(/^#{Regexp.escape(snippet.prefix)}#   +\S/) }
-  end
-
-  private def wrapped?(lines, snippet)
-    snippet.first >= 1 && lines[snippet.first - 1].match?(/^#{Regexp.escape(snippet.prefix)}#\+\+\s*$/)
+      first_blank = index
+      first_blank -= 1 while first_blank.positive? && lines[first_blank - 1].match?(/^\s*#\s*$/)
+      lines.insert(first_blank + 3, *lines.slice!(first_blank...index)) if first_blank < index
+    end
+    lines
   end
 end

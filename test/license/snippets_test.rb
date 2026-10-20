@@ -140,6 +140,88 @@ class SnippetsTest < DevtoolsTest
     end
   end
 
+  def test_wraps_a_one_line_rdoc_example
+    FixtureRepository.open do |repository|
+      repository.write("lib/one.rb", "# Returns the margin.\n#\n#   layout.margin # => 2\nclass One; end\n")
+      repository.commit(date: "2024-06-01")
+      annotate_rdoc
+
+      assert_equal "# Returns the margin.\n#\n#{rdoc_wrapper("2024 #{KERRICK}", "#   layout.margin # => 2\n")}class One; end\n",
+        repository.read("lib/one.rb")
+    end
+  end
+
+  def test_wraps_an_rdoc_example_that_follows_a_line_of_text
+    FixtureRepository.open do |repository|
+      repository.write("lib/update.rb", "# Receive in Update:\n#   in { type: :loaded }\nclass Update; end\n")
+      repository.commit(date: "2024-06-01")
+      annotate_rdoc
+
+      assert_equal "# Receive in Update:\n#{rdoc_wrapper("2024 #{KERRICK}", "#   in { type: :loaded }\n")}class Update; end\n",
+        repository.read("lib/update.rb")
+    end
+  end
+
+  def test_leaves_a_list_items_indented_lines_alone
+    text = "# Splits an area.\n#\n# [area]\n#   The area to split.\n#   Can be a Rect.\n# [kind]\n#   Event kind.\nclass Split; end\n"
+    FixtureRepository.open do |repository|
+      repository.write("lib/split.rb", text)
+      repository.commit(date: "2024-06-01")
+
+      assert_empty annotate_rdoc
+      assert_equal text, repository.read("lib/split.rb")
+    end
+  end
+
+  def test_leaves_meta_comments_and_call_seqs_alone_but_wraps_their_examples
+    text = "class Text\n  ##\n  # :attr_reader: x\n  # X coordinate.\n\n  ##\n  # :method: width\n  # :call-seq:\n" \
+      "  #   width(string) -> Integer\n  #\n  # Measures.\n  #\n  #   Text.width(\"hi\") # => 2\nend\n"
+    FixtureRepository.open do |repository|
+      repository.write("lib/text.rb", text)
+      repository.commit(date: "2024-06-01")
+
+      assert_equal ["Updated: lib/text.rb (1 code block(s))"], annotate_rdoc
+      assert_includes repository.read("lib/text.rb"),
+        "  # :call-seq:\n  #   width(string) -> Integer\n  #\n  # Measures.\n  #\n" \
+          "#{rdoc_wrapper("2024 #{KERRICK}", "  #   Text.width(\"hi\") # => 2\n", indent: '  ')}end\n"
+    end
+  end
+
+  def test_keeps_blank_lines_after_an_rdoc_example_outside_its_wrapper
+    FixtureRepository.open do |repository|
+      repository.write("lib/trail.rb", "# Trailing.\n#\n#   Trail.new\n#\n#\nclass Trail; end\n")
+      repository.commit(date: "2024-06-01")
+      annotate_rdoc
+
+      assert_equal "# Trailing.\n#\n#{rdoc_wrapper("2024 #{KERRICK}", "#   Trail.new\n")}#\n#\nclass Trail; end\n",
+        repository.read("lib/trail.rb")
+    end
+  end
+
+  def test_moves_blank_lines_out_of_an_existing_wrapper
+    wrapped = rdoc_wrapper("2024 #{KERRICK}", "#   Trail.new\n#\n")
+    FixtureRepository.open do |repository|
+      repository.write("lib/trail.rb", "# Trailing.\n#\n#{wrapped}class Trail; end\n")
+      repository.commit(date: "2024-06-01")
+
+      assert_equal ["Updated: lib/trail.rb"], annotate_rdoc
+      assert_equal "# Trailing.\n#\n#{rdoc_wrapper("2024 #{KERRICK}", "#   Trail.new\n")}#\nclass Trail; end\n",
+        repository.read("lib/trail.rb")
+    end
+  end
+
+  def test_unwraps_a_list_items_text
+    item = "# [area]\n#   A Rect specifying where to render.\n"
+    wrapped = "# [area]\n#{rdoc_wrapper('2025 Kerrick Long', "#   A Rect specifying where to render.\n")}"
+    FixtureRepository.open do |repository|
+      repository.write("lib/frame.rb", "# Renders a widget.\n#\n#{wrapped}def render; end\n")
+      repository.commit(date: "2024-06-01")
+
+      assert_equal ["Updated: lib/frame.rb"], annotate_rdoc
+      assert_equal "# Renders a widget.\n#\n#{item}def render; end\n", repository.read("lib/frame.rb")
+    end
+  end
+
   def test_credits_whoever_edits_a_wrapped_rdoc_example_once
     FixtureRepository.open do |repository|
       repository.write("lib/a.rb", "# A.\n#\n#{jane_rdoc('A.kept')}class A; end\n\n# B.\n#\n#{jane_rdoc('B.jane')}class B; end\n")

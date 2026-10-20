@@ -7,6 +7,14 @@
 
 # A Snippet that already has its wrapper, opened by its SnippetOpening.
 class WrappedSnippet < Data.define(:snippet, :opening) # :nodoc:
+  def first
+    snippet.first
+  end
+
+  def covers?(other)
+    other.first.between?(snippet.first, snippet.last)
+  end
+
   def blame_range
     snippet.blame_range
   end
