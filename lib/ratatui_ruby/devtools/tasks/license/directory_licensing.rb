@@ -11,6 +11,10 @@ require_relative "licensing"
 # Source code takes its license from where it lives, and everything below its
 # license header counts toward an author's copyright year.
 module DirectoryLicensing # :nodoc:
+  def initialize(licensing = nil)
+    @licensing = licensing
+  end
+
   def covers?(path)
     extensions.include?(File.extname(path).delete_prefix(".")) &&
       directories.any? { |directory| path.start_with?("#{directory}/") }

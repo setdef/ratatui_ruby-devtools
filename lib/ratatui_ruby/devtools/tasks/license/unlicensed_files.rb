@@ -17,16 +17,21 @@ require_relative "unknown_file"
 # The files the REUSE Tool finds without headers. The license tasks know each
 # language's header and who to credit, so the tool annotates only the rest.
 class UnlicensedFiles # :nodoc:
-  SYNTAXES = [MarkdownHeaderSyntax, RubyHeaderSyntax, RbsHeaderSyntax, RustHeaderSyntax].freeze
   CODE_EXTENSIONS = %w[rb rs rake gemspec rbs toml yml yaml json lock].freeze
   DOC_EXTENSIONS = %w[md txt].freeze
   DOC_LICENSE = "CC-BY-SA-4.0"
 
-  def initialize(tool, repository, overrides)
+  def initialize(tool, repository, overrides, licensing = nil)
     @tool = tool
     @repository = repository
     @overrides = overrides
-    @syntaxes = SYNTAXES.map(&:new)
+    @licensing = licensing
+    @syntaxes = [
+      MarkdownHeaderSyntax.new,
+      RubyHeaderSyntax.new(licensing),
+      RbsHeaderSyntax.new(licensing),
+      RustHeaderSyntax.new(licensing),
+    ]
   end
 
   # Licenses what the tool found and says what it did.

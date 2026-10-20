@@ -77,6 +77,21 @@ class ReuseTest < DevtoolsTest
     assert_equal [[".github/ci.yml", "MIT", "Jane Doe"], ["doc/notes.txt", "CC0-1.0", "Jane Doe"]], tool.annotated
   end
 
+  def test_licenses_by_the_licensing_it_is_given
+    tool = RecordingTool.new(%w[lib/a.rb .github/ci.yml])
+    licensing = Licensing.new(snippets: [], linked: ["lib/"], runtime: "MIT", non_runtime: "Apache-2.0")
+    FixtureRepository.open do |repository|
+      repository.write("lib/a.rb", "class A; end\n")
+      repository.write(".github/ci.yml", "")
+      repository.commit(date: "2024-06-01")
+
+      UnlicensedFiles.new(tool, Repository.new, {}, licensing).license
+
+      assert_includes repository.read("lib/a.rb"), "# SPDX-License-Identifier: MIT\n"
+      assert_equal [[".github/ci.yml", "Apache-2.0", KERRICK]], tool.annotated
+    end
+  end
+
   def test_the_tool_lists_unlicensed_files_and_annotates_those_without_comments
     FixtureRepository.open do |repository|
       repository.write("Cargo.lock", "# lock\n")

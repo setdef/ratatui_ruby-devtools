@@ -7,6 +7,9 @@
 
 require "test_helper"
 require "ratatui_ruby/devtools/tasks/license/licensing"
+require "ratatui_ruby/devtools/tasks/license/rbs_header_syntax"
+require "ratatui_ruby/devtools/tasks/license/ruby_header_syntax"
+require "ratatui_ruby/devtools/tasks/license/rust_header_syntax"
 
 class LicensingTest < DevtoolsTest
   def test_code_apps_link_takes_the_gemspec_license
@@ -56,6 +59,18 @@ class LicensingTest < DevtoolsTest
 
     assert_equal "LicenseRef-Commercial", licensing.license_for("test/a_test.rb")
     assert_equal "LGPL-3.0-or-later", licensing.license_for("lib/fixture.rb")
+  end
+
+  def test_header_syntaxes_license_by_the_licensing_they_are_given
+    licensing = Licensing.new(snippets: [], linked: ["lib/"], runtime: "MIT", non_runtime: "Apache-2.0")
+
+    Dir.mktmpdir do |root|
+      Dir.chdir(root) do
+        assert_equal "MIT", RubyHeaderSyntax.new(licensing).license_for("lib/a.rb")
+        assert_equal "Apache-2.0", RbsHeaderSyntax.new(licensing).license_for("sig/a.rbs")
+        assert_equal "Apache-2.0", RustHeaderSyntax.new(licensing).license_for("tasks/a.rs")
+      end
+    end
   end
 
   private def fixture_licensing(license:, extensions: [])
