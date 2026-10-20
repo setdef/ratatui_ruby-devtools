@@ -10,10 +10,6 @@ require "rdoc"
 # The code blocks of an RDoc document, wherever they sit, as RDoc's own
 # table of contents collects its headings.
 class RdocExamples < RDoc::Markup::Formatter # :nodoc:
-  def initialize
-    super(RDoc::Options.new)
-  end
-
   def start_accepting
     @examples = []
   end

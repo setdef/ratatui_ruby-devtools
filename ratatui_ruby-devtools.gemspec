@@ -45,7 +45,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "nokogiri", ">= 1.16"
   spec.add_dependency "ostruct", ">= 0.6"
   spec.add_dependency "rake", ">= 13.0"
-  spec.add_dependency "rdoc", ">= 7.0"
+  spec.add_dependency "rdoc", ">= 8.1"
   spec.add_dependency "rubocop", ">= 1.0"
   spec.add_dependency "rubycritic", ">= 4.0"
 end
