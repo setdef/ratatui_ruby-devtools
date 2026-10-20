@@ -8,6 +8,7 @@
 require_relative "devtools/task_scope"
 require_relative "devtools/tasks/bump/ruby_gem"
 require_relative "devtools/tasks/bump_tasks"
+require_relative "devtools/tasks/release_tasks"
 require_relative "devtools/version"
 
 # Root namespace for RatatuiRuby ecosystem gems.
@@ -75,7 +76,9 @@ module RatatuiRuby
         { gemspec_file:, gem_name:, version_file:, non_runtime_license:, snippet_paths: }
           .compact.each { |setting, value| public_send(:"#{setting}=", value) }
         load_tasks_from("tasks")
-        BumpTasks.new(gem_from_settings)
+        gem = gem_from_settings
+        BumpTasks.new(gem)
+        ReleaseTasks.new(gem)
       end
 
       # Loads website hosting Rake tasks (build, serve, deploy).
