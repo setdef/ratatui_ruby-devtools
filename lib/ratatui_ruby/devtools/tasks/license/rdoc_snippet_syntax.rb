@@ -23,10 +23,6 @@ class RdocSnippetSyntax # :nodoc:
     ["*.rb"]
   end
 
-  def excludes?(_path)
-    false
-  end
-
   # Existing wrappers with their copyright notices under the snippet tag,
   # without the blank lines that once followed their code inside them, and
   # only around text RDoc shows as code.

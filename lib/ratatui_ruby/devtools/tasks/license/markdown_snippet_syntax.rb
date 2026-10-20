@@ -14,11 +14,6 @@ require_relative "wrapped_snippet"
 # which the wrapper goes around so syncing doesn't erase it.
 class MarkdownSnippetSyntax # :nodoc:
   LICENSE = "MIT-0"
-  EXCLUDED = [
-    "doc/contributors/v1.0.0_blockers.md",
-    "doc/contributors/upstream_requests/tab_rects.md",
-    "doc/contributors/upstream_requests/title_rects.md",
-  ].freeze
   SYNC_START = /<!--\s*SYNC:START/
   SYNC_END = /<!--\s*SYNC:END/
 
@@ -28,10 +23,6 @@ class MarkdownSnippetSyntax # :nodoc:
 
   def tracked_patterns
     ["*.md"]
-  end
-
-  def excludes?(path)
-    EXCLUDED.any? { |excluded| path.end_with?(excluded) }
   end
 
   def license

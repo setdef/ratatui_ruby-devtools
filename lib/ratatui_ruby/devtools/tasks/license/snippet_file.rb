@@ -19,8 +19,6 @@ class SnippetFile < Data.define(:path, :syntax, :author) # :nodoc:
 
   # Brings the file's snippets up to date and says what changed.
   def annotate
-    return [] if syntax.excludes?(path)
-
     revision = SnippetRevision.new(path:, text: File.read(path), syntax:, author:).run
     File.write(path, revision.text) if revision.changed?
     revision.messages
