@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
+require_relative "devtools/task_scope"
 require_relative "devtools/tasks/bump/ruby_gem"
 require_relative "devtools/version"
 
@@ -102,11 +103,7 @@ module RatatuiRuby
       alias install! install_gem_tasks!
 
       private def load_tasks_from(subdir)
-        tasks_dir = File.expand_path("devtools/#{subdir}", __dir__)
-        Dir.glob("#{tasks_dir}/*.rake").each do |task_file|
-          Rake.application.add_import(task_file)
-        end
-        Rake.application.load_imports
+        TaskScope.new.load(File.expand_path("devtools/#{subdir}", __dir__))
       end
 
       # Returns the gem name, auto-discovered from gemspec if not set.

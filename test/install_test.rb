@@ -9,8 +9,6 @@ require "test_helper"
 require "rake"
 
 class InstallTest < DevtoolsTest
-  # The task files define methods as they load, so loading them twice in one
-  # process would redefine those methods.
   def test_installs_the_tasks_with_the_settings_you_pass_and_keeps_the_rest
     in_gem("a.gemspec", "b.gemspec") do
       RatatuiRuby::Devtools.snippet_paths = %w[examples/verify_]
@@ -21,6 +19,8 @@ class InstallTest < DevtoolsTest
       )
 
       assert Rake::Task.task_defined?("bump:patch")
+      refute Object.private_method_defined?(:build_tree)
+      refute Object.const_defined?(:CapturingToHtml)
       assert_equal ["b", "b.gemspec", "lib/b/meta.rb"],
         [RatatuiRuby::Devtools.gem_name, RatatuiRuby::Devtools.gemspec_file, RatatuiRuby::Devtools.version_file]
       assert_equal "LicenseRef-Commercial", RatatuiRuby::Devtools.non_runtime_license
