@@ -80,7 +80,6 @@ def build_tree(all_files, root_dir, max_depth = nil, current_depth = 1)
   dirs_at_level.each do |dir|
     dir_name = dir.split("/").last
     files = files_by_dir[dir] || []
-    subdirs = files_by_dir.keys.select { |d| d.start_with?("#{dir}/") && d.count("/") == current_depth + 1 }
 
     tree[dir_name] = {
       path: dir.sub("examples/", ""),
