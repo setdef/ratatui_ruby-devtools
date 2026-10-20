@@ -46,12 +46,32 @@ module RatatuiRuby
       # Use this in gem/library Rakefiles. These tasks help with version
       # management, testing, linting, and releasing gems.
       #
-      # === Example
+      # The tasks find your gemspec, your gem's name, and its version file
+      # from your gem's files. Pass any of them when your gem keeps them
+      # elsewhere, and pass how to license the code apps don't link.
+      #
+      # [gemspec_file] Your gemspec, when your gem has more than one.
+      # [gem_name] Your gem's name, when it differs from your gemspec's.
+      # [version_file] The file that defines your gem's +VERSION+.
+      # [non_runtime_license] The license for code apps don't link: tests,
+      #   tasks, scripts, type signatures, and examples.
+      #   <tt>"AGPL-3.0-or-later"</tt> unless you pass another.
+      # [snippet_paths] Path prefixes for code licensed MIT-0, like the
+      #   snippets in your docs. None unless you pass them.
+      #
+      # === Examples
       #
       #   require "ratatui_ruby/devtools"
       #   RatatuiRuby::Devtools.install_gem_tasks!
       #
-      def install_gem_tasks!
+      #   RatatuiRuby::Devtools.install_gem_tasks!(
+      #     snippet_paths: %w[examples/widget_ examples/verify_],
+      #     non_runtime_license: "LicenseRef-Commercial"
+      #   )
+      #
+      def install_gem_tasks!(gemspec_file: nil, gem_name: nil, version_file: nil, non_runtime_license: nil, snippet_paths: nil)
+        { gemspec_file:, gem_name:, version_file:, non_runtime_license:, snippet_paths: }
+          .compact.each { |setting, value| public_send(:"#{setting}=", value) }
         load_tasks_from("tasks")
       end
 

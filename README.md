@@ -186,7 +186,7 @@ RatatuiRuby::Devtools.templates_path
 
 ## Configuration
 
-Tasks auto-discover gem configuration from your `*.gemspec`. Override if needed:
+Tasks find your gemspec, your gem's name, and its version file from your gem's files. Pass any of them when you install the tasks, if your gem keeps them elsewhere:
 
 <!-- SPDX-SnippetBegin -->
 <!--
@@ -194,8 +194,10 @@ Tasks auto-discover gem configuration from your `*.gemspec`. Override if needed:
   SPDX-License-Identifier: MIT-0
 -->
 ```ruby
-RatatuiRuby::Devtools.gem_name = "my_gem"
-RatatuiRuby::Devtools.version_file = "lib/my_gem/version.rb"
+RatatuiRuby::Devtools.install_gem_tasks!(
+  gem_name: "my_gem",
+  version_file: "lib/my_gem/version.rb"
+)
 ```
 <!-- SPDX-SnippetEnd -->
 
@@ -207,8 +209,10 @@ The license tasks give the code apps link, from your gemspec's `require_paths` a
   SPDX-License-Identifier: MIT-0
 -->
 ```ruby
-RatatuiRuby::Devtools.snippet_paths = %w[examples/widget_ examples/verify_]
-RatatuiRuby::Devtools.non_runtime_license = "LicenseRef-Commercial"
+RatatuiRuby::Devtools.install_gem_tasks!(
+  snippet_paths: %w[examples/widget_ examples/verify_],
+  non_runtime_license: "LicenseRef-Commercial"
+)
 ```
 <!-- SPDX-SnippetEnd -->
 
