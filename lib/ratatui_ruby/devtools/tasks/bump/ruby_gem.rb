@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
+require "rubygems"
 require_relative "manifest"
 require_relative "rust_crate"
 
@@ -32,6 +33,12 @@ class RubyGem < Data.define(:name, :gemspec_file, :version_file) # :nodoc:
     return path if File.exist?(path)
 
     Dir.glob("lib/**/version.rb").first || path
+  end
+
+  # RubyGems caches a gemspec by the path it was loaded from, so a relative
+  # path would return another gem's spec loaded from another directory.
+  def spec
+    Gem::Specification.load(File.expand_path(gemspec_file))
   end
 
   def crate

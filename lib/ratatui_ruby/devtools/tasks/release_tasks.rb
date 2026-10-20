@@ -21,7 +21,7 @@ class ReleaseTasks < Rake::TaskLib # :nodoc:
     namespace :release do
       desc "Package the precompiled binaries in lib/ into a platform gem"
       task :platform_gem do
-        PlatformGem.new.build
+        PlatformGem.new(@gem).build
       end
 
       desc "Update stable branch to match release and set as default"

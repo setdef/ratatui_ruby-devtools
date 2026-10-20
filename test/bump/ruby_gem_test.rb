@@ -62,6 +62,16 @@ class RubyGemTest < DevtoolsTest
     end
   end
 
+  def test_loads_its_own_gemspec_wherever_another_gem_loaded_one_of_the_same_name
+    licenses = %w[MIT Apache-2.0].map do |license|
+      in_gem("fixture.gemspec" => %(Gem::Specification.new { |spec| spec.name = "fixture"; spec.license = "#{license}" })) do
+        RubyGem.found.spec.license
+      end
+    end
+
+    assert_equal %w[MIT Apache-2.0], licenses
+  end
+
   # Runs the block in a directory holding +files+.
   private def in_gem(files = {})
     Dir.mktmpdir do |root|

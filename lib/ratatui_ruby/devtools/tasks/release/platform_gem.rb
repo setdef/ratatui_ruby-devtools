@@ -17,14 +17,13 @@ require_relative "versioned_binary"
 # A PlatformGem collects those binaries and packages them into a single
 # installable gem that serves all supported Ruby versions.
 class PlatformGem
-  # Loads the gemspec and scans for compiled binaries.
-  def initialize(
-    spec = Gem::Specification.load(RatatuiRuby::Devtools.gemspec_file),
-    lib_dir = "lib/#{RatatuiRuby::Devtools.gem_name.tr('-', '_')}"
-  )
-    @spec = spec
-    @lib_dir = lib_dir
-    @binaries = VersionedBinary.scan(lib_dir, RatatuiRuby::Devtools.gem_name)
+  # Scans the gem's library for compiled binaries.
+  #
+  # [gem] The RubyGem to package.
+  def initialize(gem)
+    @spec = gem.spec
+    @lib_dir = "lib/#{gem.name.tr('-', '_')}"
+    @binaries = VersionedBinary.scan(@lib_dir, gem.name)
   end
 
   # Packages the platform gem into +pkg/+.

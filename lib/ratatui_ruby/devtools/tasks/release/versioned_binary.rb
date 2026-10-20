@@ -11,7 +11,7 @@ require_relative "../bump/sem_ver"
 class VersionedBinary < Data.define(:path)
   ##
   # Returns sorted VersionedBinary instances found under +lib_dir+.
-  def self.scan(lib_dir, gem_name = RatatuiRuby::Devtools.gem_name)
+  def self.scan(lib_dir, gem_name)
     Dir.glob("#{lib_dir}/*/#{gem_name.tr('-', '_')}.*")
       .reject { |p| p.end_with?(".rb") }
       .map { |p| new(path: p) }
