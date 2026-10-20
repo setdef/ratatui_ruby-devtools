@@ -98,6 +98,7 @@ This imports all devtools rake tasks into your project.
 | `rake rubycritic` | Run RubyCritic |
 | `rake lint:lockfile_ruby` | Check that every locked gem installs on the oldest supported Ruby |
 | `rake doc:suggest` | Suggest documentation improvements |
+| `rake doc:check_links` | Check for broken links in RDoc and Markdown files |
 
 ### License Enforcement
 
