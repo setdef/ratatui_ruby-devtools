@@ -10,4 +10,4 @@ require_relative "lib/ratatui_ruby/devtools"
 
 RatatuiRuby::Devtools.install!
 
-task default: %i[lint]
+task default: %i[test lint]
