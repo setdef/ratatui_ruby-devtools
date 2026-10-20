@@ -7,10 +7,10 @@
 
 # RubyGem knows how to update its version: manifests, lockfiles.
 class RubyGem # :nodoc:
-  def initialize(manifests:, lockfile:)
+  def initialize(manifests:, crate:)
     raise ArgumentError, "Must have exactly one primary manifest" unless manifests.count(&:primary) == 1
     @manifests = manifests
-    @lockfile = lockfile
+    @crate = crate
   end
 
   def version
@@ -19,7 +19,7 @@ class RubyGem # :nodoc:
 
   def update_version(target)
     @manifests.each { |manifest| manifest.write(target) }
-    @lockfile.refresh
+    @crate.refresh
     refresh_bundler_lockfile
   end
 

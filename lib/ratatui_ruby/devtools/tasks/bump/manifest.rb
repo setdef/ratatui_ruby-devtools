@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
+require_relative "sem_ver"
+
 # Represents a file that contains a version number.
 #
 # Gems have version numbers in multiple places: version.rb, Cargo.toml, etc.

@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Bumping a Rust gem with a dash in its name**: The scaffold puts a gem's crate in `ext/` under the gem's name with underscores, as Cargo wants, but `rake bump:*` looked under the name with its dash. For a gem like `my-gem`, the bump left the crate's `Cargo.toml` and `Cargo.lock` at the old version. It now finds the crate where the scaffold puts it and refreshes the package its `Cargo.toml` names.
 - **Platform gems in your gem's CI**: The scaffolded `build-gems` workflow packaged precompiled gems with `ruby tasks/release/platform_gem.rb`, a script that only exists inside devtools, so the Package job failed. The job now installs your bundle and runs `rake release:platform_gem`, and the gem it builds for Apple Silicon installs on every macOS version. Run `scaffold --update` to pick it up.
 - **License tasks in your gem**: The `license:headers:*` and `license:snippets:*` tasks ran their scripts from your gem's own `tasks/license/` directory, which only exists in the gem devtools came from, so they failed with `No such file or directory`. They now run the scripts devtools ships.
 - **`rake reuse:fix` credited Kerrick Long**: It annotated every file it fixed with Kerrick Long's copyright, no matter who ran it. It now uses the identity git gives your commits, from `user.name` and `user.email` or the `GIT_AUTHOR_*` variables, and stops with instructions when git doesn't know who you are. `REUSE_COPYRIGHT` still overrides it.

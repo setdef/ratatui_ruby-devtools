@@ -9,61 +9,20 @@ require "rubygems"
 
 require_relative "bump/sem_ver"
 require_relative "bump/manifest"
-require_relative "bump/cargo_lockfile"
 require_relative "bump/ruby_gem"
+require_relative "bump/rust_crate"
 require_relative "bump/release_from_trunk"
 require_relative "bump/patch_release"
 require_relative "bump/unbranched_release"
-
-# Null lockfile for gems without Rust
-class NullLockfile
-  def refresh
-    # No-op
-  end
-end
 
 namespace :bump do
   # Auto-discover gem configuration
   def devtools_gem
     @devtools_gem ||= begin
-      version_file = RatatuiRuby::Devtools.version_file
-      gem_name = RatatuiRuby::Devtools.gem_name
+      crate = RustCrate.of(RatatuiRuby::Devtools.gem_name)
+      version = Manifest.new(path: RatatuiRuby::Devtools.version_file, pattern: /(?<=VERSION = ")[^"]+(?=")/, primary: true)
 
-      manifests = [
-        Manifest.new(
-          path: version_file,
-          pattern: /(?<=VERSION = ")[^"]+(?=")/,
-          primary: true
-        ),
-      ]
-
-      # Optionally add Cargo.toml if this gem has Rust extensions
-      cargo_toml = "ext/#{gem_name}/Cargo.toml"
-      if File.exist?(cargo_toml)
-        manifests << Manifest.new(
-          path: cargo_toml,
-          pattern: /(?<=^version = ")[^"]+(?=")/,
-          primary: false
-        )
-      end
-
-      # Optionally use Cargo lockfile if it exists
-      cargo_lock = "ext/#{gem_name}/Cargo.lock"
-      lockfile = if File.exist?(cargo_lock)
-        CargoLockfile.new(
-          path: cargo_lock,
-          dir: "ext/#{gem_name}",
-          name: gem_name
-        )
-      else
-        # No-op lockfile for pure Ruby gems
-        NullLockfile.new
-      end
-
-      RubyGem.new(
-        manifests:,
-        lockfile:
-      )
+      RubyGem.new(manifests: [version, *crate.manifests], crate:)
     end
   end
 

@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
-require_relative "release/native_gem_version"
+require_relative "bump/rust_crate"
 require_relative "release/platform_gem"
 
 namespace :release do
@@ -79,14 +79,8 @@ if Rake::Task.task_defined?("release")
       end
     end
 
-    gem_name = RatatuiRuby::Devtools.gem_name
-    has_rust = File.exist?("ext/#{gem_name}/Cargo.toml") ||
-      File.exist?("ext/#{gem_name.tr('-', '_')}/Cargo.toml")
-
-    if has_rust
-      release_sha = `git rev-parse v#{version}^{}`.strip
-      NativeGemVersion.new(version:, sha: release_sha).release
-    end
+    release_sha = `git rev-parse v#{version}^{}`.strip
+    RustCrate.of(RatatuiRuby::Devtools.gem_name).release_native_gems(version:, sha: release_sha)
 
     Rake::Task["release:update_stable"].invoke
   end
