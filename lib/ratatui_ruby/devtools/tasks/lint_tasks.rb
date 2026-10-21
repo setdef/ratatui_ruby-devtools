@@ -48,7 +48,7 @@ class LintTasks < Rake::TaskLib # :nodoc:
         require_relative "lint/gem_lockfile"
         require_relative "lint/supported_rubies"
 
-        GemLockfile.current.verify(SupportedRubies.of(@gem.spec).oldest)
+        GemLockfile.new(specs: Bundler.load.specs.to_a).verify(SupportedRubies.of(@gem.spec).oldest)
       end
 
       # Build dynamic task lists based on what's available
