@@ -60,6 +60,44 @@ class ChangelogTest < DevtoolsTest
     end
   end
 
+  def test_links_a_release_on_github
+    in_changelog(<<~MARKDOWN) do |changelog|
+      ## [Unreleased]
+
+      - Something new.
+
+      ## [1.0.0] - 2026-01-01
+
+      [Unreleased]: https://github.com/me/gem/releases/tag/HEAD
+      [1.0.0]: https://github.com/me/gem/releases/tag/v1.0.0
+    MARKDOWN
+      changelog.release(SemVer.parse("1.1.0"))
+
+      assert_equal <<~MARKDOWN, File.read("CHANGELOG.md")[/^\[Unreleased\]:.*/m]
+        [Unreleased]: https://github.com/me/gem/tree/HEAD
+        [1.1.0]: https://github.com/me/gem/releases/tag/v1.1.0
+        [1.0.0]: https://github.com/me/gem/releases/tag/v1.0.0
+      MARKDOWN
+    end
+  end
+
+  def test_says_when_it_cannot_link_a_release
+    in_changelog(<<~MARKDOWN) do |changelog|
+      ## [Unreleased]
+
+      - Something new.
+
+      [Unreleased]: https://example.com/gem/HEAD
+    MARKDOWN
+      assert_output(nil, "The changelog's Unreleased link, https://example.com/gem/HEAD, isn't into a GitHub or " \
+        "SourceHut project, so 1.1.0 has no link. Add one by hand.\n") do
+        changelog.release(SemVer.parse("1.1.0"))
+      end
+
+      assert_equal "[Unreleased]: https://example.com/gem/HEAD\n", File.read("CHANGELOG.md")[/^\[Unreleased\]:.*/m]
+    end
+  end
+
   def test_releases_a_changelog_with_nothing_released_yet
     in_changelog(<<~MARKDOWN) do |changelog|
       <!--

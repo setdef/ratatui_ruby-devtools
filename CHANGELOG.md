@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Version links on GitHub**: `rake bump:*` only understood SourceHut's changelog links, so a gem on GitHub got no link for each new version, and nothing said so. On GitHub, the Unreleased link now browses `HEAD`, and the new version links to its release. A link into any other forge now gets a warning. The scaffolded `CHANGELOG.md` starts with an Unreleased link to your GitHub repository, so your first bump links your first release. Versions bumped before this have no link; add theirs by hand.
 - **Scaffolded copyright notices**: The scaffold credited Kerrick Long, not you, in the SPDX headers of `CHANGELOG.md` and `.gitignore` and in the `REUSE.toml` annotation for `doc/images/`. It now credits you, as it does everywhere else. Run `scaffold --update` to fix `.gitignore` and `REUSE.toml`, and fix `CHANGELOG.md` by hand, since the update leaves it alone.
 - **First bump of a scaffolded gem**: The scaffold's `CHANGELOG.md` has nothing released yet and no version links, so every `rake bump:*` stopped with `Could not parse CHANGELOG.md`. Bumps now release into a changelog without either. Every bump also dropped the changelog's final newline, and now keeps it.
 - **First release of a scaffolded gem**: The scaffold creates a `stable` branch but doesn't push it. `rake release` then failed at its last step, pushing `stable` to origin, because git couldn't tell the name was meant as a new branch. The release now creates `stable` on origin when it isn't there yet.

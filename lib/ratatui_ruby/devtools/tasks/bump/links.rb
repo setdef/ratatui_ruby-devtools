@@ -5,17 +5,19 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
+require_relative "github_project"
 require_relative "no_links"
+require_relative "source_hut_project"
 
 # Manages the version comparison links at the botton of the changelog.
 #
-# Release automation needs to update links. Manually calculating git diff URLs
-# for every release is tedious and error-prone. SourceHut does not have
-# standard comparison views, complicating matters further.
+# Release automation needs to update links. Manually calculating the URLs
+# for every release is tedious and error-prone, and each forge shapes them
+# differently.
 #
 # This class manages the collection of links. It parses them from the markdown.
-# It generates the correct tree links for SourceHut. It properly shifts the
-# "Unreleased" pointer.
+# It finds the project from the "Unreleased" link and asks it for the new
+# links, on GitHub or SourceHut. It properly shifts the "Unreleased" pointer.
 #
 # Use it to update the changelog during a release.
 class Links
@@ -25,11 +27,13 @@ class Links
   # wasteful. This pattern finds where the links begin.
   PATTERN = /^(\[Unreleased\]: .*)$/m
 
-  # Regex to extract the base URL from the Unreleased link.
+  # Regex to extract the URL of the Unreleased link.
   #
-  # New version links derive from the Unreleased URL structure. Parsing the
-  # URL components enables programmatic link generation.
-  UNRELEASED_PATTERN = %r{^\[Unreleased\]: (.*?/refs/)HEAD$}
+  # New version links derive from the project it links into.
+  UNRELEASED_PATTERN = /^\[Unreleased\]: (\S+)$/
+
+  # The forges whose links a release can write.
+  PROJECTS = [GitHubProject, SourceHutProject].freeze
 
   # Creates a Links object from the full markdown content.
   #
@@ -52,16 +56,20 @@ class Links
   # Releases a new version.
   #
   # Updates the "Unreleased" link to point to the new head. Adds a new link for
-  # the just-released version pointing to its specific tag.
+  # the just-released version pointing to its specific tag. Warns instead when
+  # the "Unreleased" link isn't into a GitHub or SourceHut project.
   #
   # [version] String. The new version number (e.g., <tt>"0.5.0"</tt>).
   def release(version)
-    return unless base_url
+    link = @text[UNRELEASED_PATTERN, 1]
+    project = PROJECTS.lazy.filter_map { |forge| forge.linked_from(link) }.first
+    unless project
+      warn "The changelog's Unreleased link, #{link}, isn't into a GitHub or SourceHut project, " \
+        "so #{version} has no link. Add one by hand."
+      return self
+    end
 
-    new_unreleased = "[Unreleased]: #{base_url}HEAD" # .../HEAD
-    new_version_link = "[#{version}]: #{base_url}v#{version}" # .../v1.0.0
-
-    @text.sub!(UNRELEASED_PATTERN, "#{new_unreleased}\n#{new_version_link}")
+    @text.sub!(UNRELEASED_PATTERN, "[Unreleased]: #{project.unreleased(version)}\n[#{version}]: #{project.release(version)}")
     self
   end
 
@@ -81,11 +89,5 @@ class Links
   # Returns the string representation of the links.
   def to_s
     @text
-  end
-
-  # The base URL for the repository's references.
-  private def base_url
-    match = @text.match(UNRELEASED_PATTERN)
-    match[1] if match
   end
 end
