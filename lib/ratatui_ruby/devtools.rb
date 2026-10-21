@@ -10,6 +10,7 @@ require_relative "devtools/tasks/autodoc_tasks"
 require_relative "devtools/tasks/bump/ruby_gem"
 require_relative "devtools/tasks/bump_tasks"
 require_relative "devtools/tasks/cargo_tasks"
+require_relative "devtools/tasks/doc_tasks"
 require_relative "devtools/tasks/license/licensing"
 require_relative "devtools/tasks/license_tasks"
 require_relative "devtools/tasks/lint_tasks"
@@ -85,7 +86,7 @@ module RatatuiRuby
           .compact.each { |setting, value| public_send(:"#{setting}=", value) }
         AutodocTasks.new
         CargoTasks.new
-        load_tasks_from("tasks")
+        DocTasks.new
         TestTasks.new
         gem = gem_from_settings
         BumpTasks.new(gem)
