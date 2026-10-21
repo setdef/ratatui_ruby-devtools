@@ -32,11 +32,13 @@ class FixtureRepository
   # afterwards. Runs as +runner+, the person a commit made now would credit.
   def self.open(runner: KERRICK)
     Dir.mktmpdir do |root|
-      Dir.chdir(root) do
+      work = File.join(root, "work")
+      Dir.mkdir(work)
+      Dir.chdir(work) do
         git("init", "-q")
         git("config", "user.name", runner.name)
         git("config", "user.email", runner.email)
-        yield new
+        yield new(root)
       end
     end
   end
@@ -46,6 +48,10 @@ class FixtureRepository
     raise "git #{args.join(' ')} failed:\n#{output}" unless status.success?
 
     output
+  end
+
+  def initialize(root)
+    @root = root
   end
 
   def write(path, text)
@@ -72,6 +78,37 @@ class FixtureRepository
     self.class.git("commit", "-q", "--no-verify", "-m", date, env:)
   end
 
+  # Tags the last commit, annotated when there's a +message+, as releases are.
+  def tag(name, message: nil)
+    self.class.git("tag", *(["-a", "-m", message] if message), name)
+  end
+
+  def branch(name)
+    self.class.git("branch", name)
+  end
+
+  def tags
+    self.class.git("tag").split
+  end
+
+  # The commit a branch, tag, or HEAD names.
+  def commit_of(ref)
+    self.class.git("rev-parse", "#{ref}^{commit}").strip
+  end
+
+  # A bare repository beside this one, which it pushes to as origin.
+  def origin
+    @origin ||= FixtureOrigin.create(File.join(@root, "origin.git"))
+  end
+
+  def push_branch(name)
+    self.class.git("push", "-q", "origin", "HEAD:refs/heads/#{name}")
+  end
+
+  def push_tag(name)
+    self.class.git("push", "-q", "origin", "refs/tags/#{name}")
+  end
+
   # A gemspec like the ecosystem's: it ships what git tracks outside the
   # directories apps never see.
   def gemspec(license:, extensions: [])
@@ -88,6 +125,30 @@ class FixtureRepository
         end
       end
     RUBY
+  end
+end
+
+# The remote a FixtureRepository publishes to, as a release pushes to GitHub.
+class FixtureOrigin < Data.define(:path)
+  def self.create(path)
+    FixtureRepository.git("init", "-q", "--bare", path)
+    FixtureRepository.git("remote", "add", "origin", path)
+    new(path:)
+  end
+
+  # The commit origin's branch points to, or nil when origin has no such
+  # branch.
+  def branch_commit(name)
+    commit_of("refs/heads/#{name}")
+  end
+
+  # The commit origin's tag releases, or nil when origin has no such tag.
+  def tag_commit(name)
+    commit_of("refs/tags/#{name}^{}") || commit_of("refs/tags/#{name}")
+  end
+
+  private def commit_of(ref)
+    FixtureRepository.git("ls-remote", path, ref).split.first
   end
 end
 
