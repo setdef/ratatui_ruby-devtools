@@ -66,6 +66,14 @@ class ReleaseTasksTest < DevtoolsTest
     end
   end
 
+  def test_creates_stable_on_origin_when_it_was_never_pushed
+    in_released_repository("0.1.0", stable: "0.0.0", pushed_stable: false) do |repository|
+      capture_subprocess_io { Rake::Task["release:update_stable"].invoke }
+
+      assert_equal repository.commit_of("v0.1.0"), repository.origin.branch_commit("stable")
+    end
+  end
+
   def test_leaves_stable_alone_when_it_is_not_older
     in_released_repository("1.1.0", stable: "1.1.0") do |repository|
       stable = repository.commit_of("stable")
@@ -157,18 +165,19 @@ class ReleaseTasksTest < DevtoolsTest
     end
   end
 
-  # Commits the previous release, which origin's stable branch holds, and
-  # makes it the local stable branch too if +stable+ names its version. Then
+  # Commits the previous release, which origin's stable branch holds unless
+  # +pushed_stable+ is false, and makes it the local stable branch too if
+  # +stable+ names its version. Then
   # commits +version+ and tags it as +tag+ the way Bundler's release does,
   # pushed to origin. Defines Bundler's release task, which builds and
   # publishes in its prerequisites, and the release tasks for the block.
-  private def in_released_repository(version, stable: nil, tag: "v#{version}", crate: NoCrate.new)
+  private def in_released_repository(version, stable: nil, tag: "v#{version}", crate: NoCrate.new, pushed_stable: true)
     with_rake do
       FixtureRepository.open do |repository|
         repository.origin
         repository.write("lib/fixture/version.rb", %(VERSION = "#{stable || '0.9.0'}"\n))
         repository.commit(date: "2026-01-01")
-        repository.push_branch("stable")
+        repository.push_branch("stable") if pushed_stable
         repository.branch("stable") if stable
         repository.write("lib/fixture/version.rb", %(VERSION = "#{version}"\n))
         repository.write("CHANGELOG.md", "Released.\n")

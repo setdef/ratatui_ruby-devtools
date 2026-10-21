@@ -92,10 +92,12 @@ class Repository # :nodoc:
   end
 
   # Stable is reset to each release rather than fast-forwarded, so origin's
-  # copy is overwritten.
+  # copy is overwritten. Git can't tell that a bare name is meant as a branch
+  # when origin has none yet, as after the scaffold, so the push names it in
+  # full.
   def move_stable(commit)
     sh "git", "branch", "-f", STABLE, commit
-    sh "git", "push", "--force", "origin", "#{commit}:#{STABLE}"
+    sh "git", "push", "--force", "origin", "#{commit}:refs/heads/#{STABLE}"
   end
 
   # Deletes the tag here and on origin.
