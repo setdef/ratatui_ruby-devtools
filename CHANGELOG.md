@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **Ruby 3.2**: Ruby 3.2 reached end of life on 2026-03-31, so devtools now needs Ruby 3.3.11 or later. Scaffolded gems test on Ruby 3.3, 3.4, and 4.0, and RuboCop checks them as Ruby 3.3. On Ruby 3.2, keep using devtools 0.2.
 - **`rake reuse:normalize_ruby`**: It moved the bare SPDX lines the REUSE Tool wrote into Ruby files below the magic comment and between `#--` and `#++`. `rake reuse:fix` now writes Ruby headers that way itself, so there is nothing left to normalize.
 
 ## [0.2.1] - 2026-02-16
