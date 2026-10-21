@@ -72,6 +72,24 @@ class BumpTasksTest < DevtoolsTest
     assert_finishes_the_one_zero_beta(:major)
   end
 
+  def test_releases_the_next_candidate_on_trunk
+    in_bumped_repository("1.2.0-beta.3") do |repository|
+      bump(:minor, "rc")
+
+      assert_equal %(VERSION = "1.2.0-rc.1"\n), repository.file_on("trunk", "lib/fixture/version.rb")
+      assert_equal %w[trunk], branches
+    end
+  end
+
+  def test_ships_a_candidate_by_opening_its_series
+    in_bumped_repository("1.2.0-rc.1") do |repository|
+      bump(:minor)
+
+      assert_equal %(VERSION = "1.2.0"\n), repository.file_on("release/1.2", "lib/fixture/version.rb")
+      assert_equal %(VERSION = "1.2.0"\n), repository.file_on("trunk", "lib/fixture/version.rb")
+    end
+  end
+
   def test_releases_on_trunk_before_one_zero
     in_bumped_repository("0.2.0") do |repository|
       bump(:minor)
@@ -166,8 +184,8 @@ class BumpTasksTest < DevtoolsTest
     end
   end
 
-  private def bump(segment)
-    capture_subprocess_io { Rake::Task["bump:#{segment}"].invoke }
+  private def bump(segment, label = nil)
+    capture_subprocess_io { Rake::Task["bump:#{segment}"].invoke(label) }
   end
 
   private def branches

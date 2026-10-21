@@ -23,19 +23,19 @@ class BumpTasks < Rake::TaskLib # :nodoc:
 
   private def define
     namespace :bump do
-      desc "Bump major version"
-      task :major do
-        BumpWorkflow.for(@gem, :major).call
+      desc "Bump major version, or to a prerelease with a label (e.g. rake bump:major[beta])"
+      task :major, [:label] do |_, args|
+        BumpWorkflow.for(@gem, :major, args[:label]).call
       end
 
-      desc "Bump minor version"
-      task :minor do
-        BumpWorkflow.for(@gem, :minor).call
+      desc "Bump minor version, or to a prerelease with a label (e.g. rake bump:minor[rc])"
+      task :minor, [:label] do |_, args|
+        BumpWorkflow.for(@gem, :minor, args[:label]).call
       end
 
-      desc "Bump patch version"
-      task :patch do
-        BumpWorkflow.for(@gem, :patch).call
+      desc "Bump patch version, or to a prerelease with a label (e.g. rake bump:patch[rc])"
+      task :patch, [:label] do |_, args|
+        BumpWorkflow.for(@gem, :patch, args[:label]).call
       end
 
       desc "Set exact version (e.g. rake bump:exact[0.1.0])"

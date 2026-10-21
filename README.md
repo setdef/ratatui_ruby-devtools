@@ -117,13 +117,14 @@ This imports all devtools rake tasks into your project.
 | `rake bump:major` | Bump major version |
 | `rake bump:minor` | Bump minor version |
 | `rake bump:patch` | Bump patch version |
+| `rake 'bump:minor[rc]'` | Bump to a prerelease, such as `1.2.0-rc.1` |
 | `rake bump:exact[0.1.0]` | Set exact version |
 
 Every bump commits the release for you and refuses to start on the wrong branch or with uncommitted changes.
 
 Before 1.0, your gem is in initial development, and its API can change in any release. Those releases are still normal versions, so `gem install` and Bundler find them. A new gem starts at `0.0.0`, so its first `bump:patch` or `bump:minor` releases `0.0.1` or `0.1.0`.
 
-A prerelease is different. `1.2.0-beta.1` is a candidate for `1.2.0`, and users get it only with `gem install --pre` or a requirement that names a prerelease. The bump tasks never make one on their own. Set one on trunk with `bump:exact[1.2.0-beta.1]`. A bump from there that reaches `1.2.0` releases it, whether you run `bump:patch` or `bump:minor`.
+A prerelease is different. `1.2.0-beta.1` is a candidate for `1.2.0`, and users get it only with `gem install --pre` or a requirement that names a prerelease. A bump makes one only when you give it a label: `rake 'bump:minor[beta]'` takes `1.1.3` to `1.2.0-beta.1`, and again to `1.2.0-beta.2`. Another label starts again at `.1`, so `rake 'bump:minor[rc]'` then releases `1.2.0-rc.1`. A label has to sort after the one you're on, because SemVer compares labels as text: `rc` follows `beta`, but `beta` doesn't follow `dev`. A bump without a label ships the candidate, so `bump:minor` or `bump:patch` takes `1.2.0-rc.1` to `1.2.0`. Candidates release on trunk.
 
 Before 1.0, every release comes from trunk. Run any bump there.
 

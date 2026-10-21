@@ -17,10 +17,13 @@
 #
 # === Example
 #
-#   SemVer.parse("1.2.3").next(:minor).to_s  # => "1.3.0"
+#   SemVer.parse("1.2.3").next(:minor).to_s        # => "1.3.0"
+#   SemVer.parse("1.2.3").next(:minor, "rc").to_s  # => "1.3.0-rc.1"
 #
 # See https://semver.org/spec/v2.0.0.html
 class SemVer
+  include Comparable
+
   # The valid segment names for version bumping.
   SEGMENTS = [:major, :minor, :patch].freeze
 
@@ -76,17 +79,36 @@ class SemVer
   # to releases it: <tt>1.0.0-rc.1</tt> becomes <tt>1.0.0</tt> on any segment,
   # and <tt>1.2.3-rc.1</tt> becomes <tt>1.2.3</tt> on <tt>:patch</tt>.
   #
+  # Pass a +label+ to get a prerelease of that version instead. Its number
+  # counts up from the prerelease you're on when that leads to the same
+  # version under the same label, and starts at 1 otherwise:
+  # <tt>1.2.0-rc.1</tt> becomes <tt>1.2.0-rc.2</tt> on <tt>:minor</tt> with
+  # <tt>"rc"</tt>, and <tt>1.2.0-beta.3</tt> becomes <tt>1.2.0-rc.1</tt>.
+  #
+  # Raises ArgumentError when the labelled version would come before this
+  # one. SemVer compares labels as text, so <tt>beta</tt> can't follow
+  # <tt>rc</tt>.
+  #
   # [segment] One of <tt>:major</tt>, <tt>:minor</tt>, or <tt>:patch</tt>.
-  def next(segment)
-    index = SEGMENTS.index(segment)
-    raise ArgumentError, "Invalid segment: #{segment}" unless index
-    return SemVer.new(@segments) if @prerelease && @segments[(index + 1)..].all?(&:zero?)
+  # [label] A prerelease label such as <tt>"beta"</tt>, or nil.
+  def next(segment, label = nil)
+    release = release_after(segment)
+    return release unless label
 
-    new_segments = @segments.dup
-    new_segments[index] += 1
-    new_segments.fill(0, (index + 1)..2)
+    candidate = SemVer.parse("#{release}-#{label}.#{count_toward(release, label) + 1}")
+    return candidate if candidate > self
 
-    SemVer.new(new_segments)
+    raise ArgumentError, "#{candidate} would come before #{self}. SemVer compares prerelease labels as text, " \
+      "so pick a label that sorts after #{@prerelease.split('.').first}."
+  end
+
+  # Compares versions as SemVer orders them: by segment, then a prerelease
+  # before its release, then by prerelease identifiers.
+  def <=>(other)
+    return unless other.is_a?(SemVer)
+
+    by_segments = @segments <=> other.segments
+    by_segments.zero? ? prerelease_order(other.prerelease) : by_segments
   end
 
   # Returns the git tag that names this version, such as <tt>v1.0.0-beta.1</tt>.
@@ -105,5 +127,54 @@ class SemVer
   def to_s
     base = @segments.join(".")
     @prerelease ? "#{base}-#{@prerelease}" : base
+  end
+
+  protected attr_reader :segments, :prerelease # :nodoc:
+
+  private def release_after(segment)
+    index = SEGMENTS.index(segment)
+    raise ArgumentError, "Invalid segment: #{segment}" unless index
+    return SemVer.new(@segments) if @prerelease && @segments[(index + 1)..].all?(&:zero?)
+
+    new_segments = @segments.dup
+    new_segments[index] += 1
+    new_segments.fill(0, (index + 1)..2)
+
+    SemVer.new(new_segments)
+  end
+
+  # How many prereleases labelled +label+ this one has counted toward
+  # +release+: 1 for rc.1, none for beta.3 or for another version's rc.
+  private def count_toward(release, label)
+    return 0 unless @prerelease && @segments == release.segments
+
+    @prerelease.match(/\A#{Regexp.escape(label)}(?:\.(\d+))?\z/)&.[](1).to_i
+  end
+
+  # Numeric identifiers compare as numbers and come before words, and a
+  # prerelease that runs out of identifiers first comes first.
+  private def prerelease_order(theirs)
+    return 0 if @prerelease == theirs
+    return 1 unless @prerelease
+    return -1 unless theirs
+
+    ours = @prerelease.split(".")
+    theirs = theirs.split(".")
+    ours.zip(theirs) do |mine, other|
+      return 1 unless other
+
+      order = identifier_order(mine, other)
+      return order unless order.zero?
+    end
+    ours.size <=> theirs.size
+  end
+
+  private def identifier_order(mine, other)
+    numbers = [mine, other].map { |identifier| identifier.to_i if identifier.match?(/\A\d+\z/) }
+    return numbers[0] <=> numbers[1] if numbers.all?
+    return -1 if numbers[0]
+    return 1 if numbers[1]
+
+    mine <=> other
   end
 end

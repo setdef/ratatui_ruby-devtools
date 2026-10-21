@@ -16,8 +16,8 @@ class BumpWorkflow # :nodoc:
   # take patch releases without the next minor's changes. The version a bump
   # releases decides which branch it belongs on, whichever segment named it:
   # a patch bump that finishes 1.0.0-beta.1 opens the 1.0 series.
-  def self.for(gem, segment)
-    target = gem.version.next(segment)
+  def self.for(gem, segment, label = nil)
+    target = gem.version.next(segment, label)
     workflow = if !target.stable?
       UnbranchedRelease
     elsif target.patch.zero?
