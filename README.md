@@ -121,6 +121,10 @@ This imports all devtools rake tasks into your project.
 
 Every bump commits the release for you and refuses to start on the wrong branch or with uncommitted changes.
 
+Before 1.0, your gem is in initial development, and its API can change in any release. Those releases are still normal versions, so `gem install` and Bundler find them. A new gem starts at `0.0.0`, so its first `bump:patch` or `bump:minor` releases `0.0.1` or `0.1.0`.
+
+A prerelease is different. `1.2.0-beta.1` is a candidate for `1.2.0`, and users get it only with `gem install --pre` or a requirement that names a prerelease. The bump tasks never make one on their own. Set one with `bump:exact[1.2.0-beta.1]`, and `bump:patch` or `bump:minor` later releases it as `1.2.0`.
+
 Before 1.0, every release comes from trunk. Run any bump there.
 
 From 1.0 on, each minor version gets a release branch, so its users can take patch releases without the next minor's changes. Run `bump:minor` or `bump:major` on trunk: it creates `release/X.Y`, commits the release there, imports the release into trunk, and commits that too. Run `bump:patch` on the release branch it fixes. The first `bump:major` to 1.0 starts this workflow.

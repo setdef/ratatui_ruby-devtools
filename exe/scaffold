@@ -338,7 +338,7 @@ class TemplateRenderer
         #{prefix}module #{parts.first}
         #{prefix}  # The version of this gem.
         #{prefix}  # See https://semver.org/spec/v2.0.0.html
-        #{prefix}  VERSION = "0.0.1.pre.1"
+        #{prefix}  VERSION = "0.0.0"
         #{prefix}end
       RUBY
     else
@@ -533,11 +533,13 @@ else
       system("git commit --allow-empty -m 'chore: scaffold #{config.gem_name} with ratatui_ruby-devtools'")
     end
 
-    # Create tag and stable branch
-    system("git tag v0.0.1.pre.1 -m 'Initial scaffold release'")
+    # Create tag and stable branch. A gem in initial development still makes
+    # normal releases; a prerelease is a candidate users must opt into, so the
+    # gem starts at 0.0.0 rather than at a prerelease of 0.0.1.
+    system("git tag v0.0.0 -m 'Initial scaffold release'")
     system("git branch stable")
     puts "  Created branches: trunk (default), stable"
-    puts "  Created tag: v0.0.1.pre.1"
+    puts "  Created tag: v0.0.0"
   end
 
   puts ""
