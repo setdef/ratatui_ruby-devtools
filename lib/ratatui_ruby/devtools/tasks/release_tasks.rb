@@ -7,13 +7,15 @@
 
 require "rake/tasklib"
 
+require_relative "bump/repository"
 require_relative "release/platform_gem"
 
 # The tasks that release a gem and its native gems.
 class ReleaseTasks < Rake::TaskLib # :nodoc:
-  def initialize(gem)
+  def initialize(gem, repository: Repository.new)
     super()
     @gem = gem
+    @repository = repository
     define
   end
 
@@ -34,13 +36,13 @@ class ReleaseTasks < Rake::TaskLib # :nodoc:
 
         # Verify that the version file matches the actual git tag
         # This prevents updating stable to the wrong version if the release failed
-        latest_tag = `git describe --tags --abbrev=0`.strip
+        latest_tag = @repository.latest_tag
         if latest_tag != tag_name
           abort "Fatal: Version mismatch! '#{version_file}' says #{tag_name}, but the latest git tag is #{latest_tag}."
         end
 
         # Get current stable version (if stable branch exists)
-        stable_version_str = `git show stable:#{version_file} 2>/dev/null`.match(/VERSION = "(.+?)"/)&.[](1)
+        stable_version_str = @repository.stable_file(version_file)&.match(/VERSION = "(.+?)"/)&.[](1)
         if stable_version_str
           stable_version = Gem::Version.new(stable_version_str)
           new_version = Gem::Version.new(version)
@@ -52,16 +54,7 @@ class ReleaseTasks < Rake::TaskLib # :nodoc:
         end
 
         puts "Updating stable branch to point to #{tag_name}..."
-        # Resolve the tag to a commit hash (peel annotated tags)
-        # This renders a commit SHA that can be pushed to a branch head
-        commit_sha = `git rev-parse #{tag_name}^{}`.strip
-
-        # Update local stable branch to match
-        sh "git branch -f stable #{commit_sha}"
-
-        # Push the commit to remote stable branch
-        # Force-push because stable is reset to each release, not fast-forwarded.
-        sh "git push --force origin #{commit_sha}:stable"
+        @repository.move_stable(@repository.released_commit(tag_name))
       end
     end
 
@@ -80,16 +73,12 @@ class ReleaseTasks < Rake::TaskLib # :nodoc:
 
           if normalized_tag != semver_tag
             puts "Replacing normalized tag #{normalized_tag} with semver tag #{semver_tag}..."
-            # Delete the normalized tag locally and remotely
-            sh "git tag -d #{normalized_tag}"
-            sh "git push origin :refs/tags/#{normalized_tag}"
-            # Create the semver tag pointing to the same commit
-            sh "git tag #{semver_tag} HEAD"
-            sh "git push origin #{semver_tag}"
+            @repository.delete_tag(normalized_tag)
+            @repository.tag_head(semver_tag)
           end
         end
 
-        release_sha = `git rev-parse v#{version}^{}`.strip
+        release_sha = @repository.released_commit("v#{version}")
         @gem.crate.release_native_gems(version:, sha: release_sha)
 
         Rake::Task["release:update_stable"].invoke

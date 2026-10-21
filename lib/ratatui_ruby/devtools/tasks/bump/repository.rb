@@ -6,11 +6,16 @@
 #++
 
 require "open3"
+require "rake/file_utils_ext"
 require "shellwords"
 require "tmpdir"
 
 class Repository # :nodoc:
+  # Releasing shows each git command it runs, as rake tasks do.
+  include Rake::FileUtilsExt
+
   TRUNK = "trunk"
+  STABLE = "stable"
 
   class Author < Data.define(:name, :email) # :nodoc:
     def to_s
@@ -67,6 +72,42 @@ class Repository # :nodoc:
       `git diff --name-only --cached --diff-filter=ACMR 2>/dev/null`,
       `git ls-files --others --exclude-standard`,
     ].flat_map { |output| output.split("\n") }.uniq
+  end
+
+  def latest_tag
+    `git describe --tags --abbrev=0`.strip
+  end
+
+  # An annotated tag is an object of its own, and a branch can only point at
+  # a commit.
+  def released_commit(tag)
+    `git rev-parse #{tag}^{}`.strip
+  end
+
+  # The file as the stable branch has it, or nil when there's no such branch
+  # or file.
+  def stable_file(path)
+    text = `git show #{STABLE}:#{path} 2>/dev/null`
+    text unless text.empty?
+  end
+
+  # Stable is reset to each release rather than fast-forwarded, so origin's
+  # copy is overwritten.
+  def move_stable(commit)
+    sh "git", "branch", "-f", STABLE, commit
+    sh "git", "push", "--force", "origin", "#{commit}:#{STABLE}"
+  end
+
+  # Deletes the tag here and on origin.
+  def delete_tag(name)
+    sh "git", "tag", "-d", name
+    sh "git", "push", "origin", ":refs/tags/#{name}"
+  end
+
+  # Tags HEAD here and on origin.
+  def tag_head(name)
+    sh "git", "tag", name, "HEAD"
+    sh "git", "push", "origin", name
   end
 
   def create_branch(name)
