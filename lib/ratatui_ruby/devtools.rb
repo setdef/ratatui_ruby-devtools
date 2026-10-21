@@ -12,6 +12,7 @@ require_relative "devtools/tasks/license/licensing"
 require_relative "devtools/tasks/license_tasks"
 require_relative "devtools/tasks/lint_tasks"
 require_relative "devtools/tasks/release_tasks"
+require_relative "devtools/tasks/reuse_tasks"
 require_relative "devtools/tasks/website_tasks"
 require_relative "devtools/version"
 
@@ -85,7 +86,9 @@ module RatatuiRuby
         ReleaseTasks.new(gem)
         WebsiteTasks.new(gem)
         LintTasks.new(gem)
-        LicenseTasks.new(licensing_from_settings(gem))
+        licensing = licensing_from_settings(gem)
+        LicenseTasks.new(licensing)
+        ReuseTasks.new(licensing)
       end
 
       # Loads website hosting Rake tasks (build, serve, deploy).
