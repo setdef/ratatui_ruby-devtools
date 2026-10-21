@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #++
 
+require_relative "no_links"
+
 # Manages the version comparison links at the botton of the changelog.
 #
 # Release automation needs to update links. Manually calculating git diff URLs
@@ -34,9 +36,7 @@ class Links
   # [content] String. The full text of the changelog.
   def self.from_markdown(content)
     match = content.match(PATTERN)
-    return unless match
-
-    new(match[1].strip)
+    match ? new(match[1].strip) : NoLinks.new
   end
 
   # Returns the raw text of the links.
@@ -63,6 +63,19 @@ class Links
 
     @text.sub!(UNRELEASED_PATTERN, "#{new_unreleased}\n#{new_version_link}")
     self
+  end
+
+  # Returns where the links begin in +content+, which is where the history
+  # before them ends.
+  #
+  # [content] String. The full text of the changelog.
+  def start_in(content)
+    content.index(@text)
+  end
+
+  # Returns the links as the changelog ends with them, after a blank line.
+  def footer
+    "\n#{@text}\n"
   end
 
   # Returns the string representation of the links.

@@ -21,10 +21,10 @@ class History
   # [content] The full changelog text.
   # [header_length] Length of the header section.
   # [unreleased_length] Length of the Unreleased section.
-  # [links_text] The links section text (used as end marker).
-  def self.parse(content, header_length, unreleased_length, links_text)
+  # [links] The changelog's Links, where the history ends.
+  def self.parse(content, header_length, unreleased_length, links)
     start = header_length + unreleased_length
-    text = "#{content[start...(content.index(links_text))].strip}\n"
+    text = "#{content[start...(links.start_in(content))].strip}\n"
     new(text)
   end
 

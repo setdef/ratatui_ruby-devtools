@@ -20,7 +20,7 @@ require "rdoc"
 # Use it during release preparation.
 class UnreleasedSection
   # Regex to match the Unreleased section.
-  PATTERN = /^(## \[Unreleased\].*?)(?=## \[\d)/m
+  PATTERN = /^(## \[Unreleased\].*?)(?=^## \[\d|^\[Unreleased\]: |\z)/m
 
   # Parses the Unreleased section from changelog content.
   #

@@ -41,14 +41,14 @@ class Changelog
     unreleased = UnreleasedSection.parse(content)
     links = Links.from_markdown(content)
 
-    raise "Could not parse CHANGELOG.md" unless header && unreleased && links
+    raise "Could not parse CHANGELOG.md" unless header && unreleased
 
-    history = History.parse(content, header.length, unreleased.to_s.length, links.to_s)
+    history = History.parse(content, header.length, unreleased.to_s.length, links)
 
     links.release(new_version)
     history.add(unreleased.as_version(new_version))
 
-    File.write(@path, "#{header}#{UnreleasedSection.fresh}\n\n#{history}\n#{links}")
+    File.write(@path, "#{header}#{UnreleasedSection.fresh}\n\n#{history}#{links.footer}")
     nil
   end
 
@@ -61,13 +61,13 @@ class Changelog
     unreleased = UnreleasedSection.parse(content)
     links = Links.from_markdown(content)
 
-    raise "Could not parse CHANGELOG.md" unless header && unreleased && links
+    raise "Could not parse CHANGELOG.md" unless header && unreleased
 
-    history = History.parse(content, header.length, unreleased.to_s.length, links.to_s)
+    history = History.parse(content, header.length, unreleased.to_s.length, links)
 
     pruned = unreleased.without_entries(released_entries)
 
-    File.write(@path, "#{header}#{pruned}\n\n#{history}\n#{links}")
+    File.write(@path, "#{header}#{pruned}\n\n#{history}#{links.footer}")
     nil
   end
 
@@ -84,9 +84,9 @@ class Changelog
     unreleased = UnreleasedSection.parse(content)
     links = Links.from_markdown(content)
 
-    raise "Could not parse CHANGELOG.md" unless header && unreleased && links
+    raise "Could not parse CHANGELOG.md" unless header && unreleased
 
-    history = History.parse(content, header.length, unreleased.to_s.length, links.to_s)
+    history = History.parse(content, header.length, unreleased.to_s.length, links)
 
     # Add the release section to history (inserted in version order)
     history.add(release_section)
@@ -96,7 +96,7 @@ class Changelog
     release_entries = release_section.lines.select { |l| l.strip.start_with?("- ") }.map(&:strip)
     pruned = unreleased.without_entries(release_entries)
 
-    File.write(@path, "#{header}#{pruned}\n\n#{history}\n#{links}")
+    File.write(@path, "#{header}#{pruned}\n\n#{history}#{links.footer}")
     nil
   end
 

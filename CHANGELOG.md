@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **First bump of a scaffolded gem**: The scaffold's `CHANGELOG.md` has nothing released yet and no version links, so every `rake bump:*` stopped with `Could not parse CHANGELOG.md`. Bumps now release into a changelog without either. Every bump also dropped the changelog's final newline, and now keeps it.
 - **First release of a scaffolded gem**: The scaffold creates a `stable` branch but doesn't push it. `rake release` then failed at its last step, pushing `stable` to origin, because git couldn't tell the name was meant as a new branch. The release now creates `stable` on origin when it isn't there yet.
 - **Bumping a Rust gem with a dash in its name**: The scaffold puts a gem's crate in `ext/` under the gem's name with underscores, as Cargo wants, but `rake bump:*` looked under the name with its dash. For a gem like `my-gem`, the bump left the crate's `Cargo.toml` and `Cargo.lock` at the old version. It now finds the crate where the scaffold puts it and refreshes the package its `Cargo.toml` names.
 - **`rake website:build` ignored `gemspec_file`**: The other tasks read the gemspec you named. The website build read the first `*.gemspec` in your gem's directory instead, so a gem with more than one could get a site titled after the wrong one. It now reads the gemspec you pass as `gemspec_file:`, like the other tasks.
