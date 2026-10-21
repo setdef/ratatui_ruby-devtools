@@ -92,14 +92,6 @@ class FixtureRepository
 end
 
 class DevtoolsTest < Minitest::Test
-  # Settings a test makes for its fixture gem mustn't leak into the next.
-  def teardown
-    RatatuiRuby::Devtools.gemspec_file = nil
-    RatatuiRuby::Devtools.non_runtime_license = nil
-    RatatuiRuby::Devtools.snippet_paths = nil
-    super
-  end
-
   # The licensing of the gem FixtureRepository#gemspec wrote in the current
   # directory.
   def licensing(snippets: [], non_runtime: "AGPL-3.0-or-later")

@@ -8,11 +8,22 @@ module RatatuiRuby
     class Error < StandardError
     end
 
-    def self.install!: () -> void
-    def self.non_runtime_license: () -> String
-    def self.non_runtime_license=: (String) -> String
-    def self.snippet_paths: () -> Array[String]
-    def self.snippet_paths=: (Array[String]) -> Array[String]
+    def self.install_gem_tasks!: (
+      ?gemspec_file: String?,
+      ?gem_name: String?,
+      ?version_file: String?,
+      ?non_runtime_license: String,
+      ?snippet_paths: Array[String]
+    ) -> void
+    def self.install!: (
+      ?gemspec_file: String?,
+      ?gem_name: String?,
+      ?version_file: String?,
+      ?non_runtime_license: String,
+      ?snippet_paths: Array[String]
+    ) -> void
+    def self.install_website_tasks!: (source_gem_dir: String) -> void
+    def self.source_gem_dir: () -> String?
     def self.templates_path: () -> String
     def self.tasks_path: () -> String
   end

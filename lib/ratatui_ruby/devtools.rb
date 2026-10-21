@@ -50,9 +50,6 @@ module RatatuiRuby
     class Error < StandardError; end
 
     class << self
-      # Configuration accessors - auto-discovered if not set
-      attr_writer :gem_name, :gemspec_file, :version_file, :non_runtime_license, :snippet_paths
-
       # Loads gem development Rake tasks (test, lint, bump, license, etc.)
       #
       # Use this in gem/library Rakefiles. These tasks help with version
@@ -81,19 +78,23 @@ module RatatuiRuby
       #     non_runtime_license: "LicenseRef-Commercial"
       #   )
       #
-      def install_gem_tasks!(gemspec_file: nil, gem_name: nil, version_file: nil, non_runtime_license: nil, snippet_paths: nil)
-        { gemspec_file:, gem_name:, version_file:, non_runtime_license:, snippet_paths: }
-          .compact.each { |setting, value| public_send(:"#{setting}=", value) }
+      def install_gem_tasks!(
+        gemspec_file: nil,
+        gem_name: nil,
+        version_file: nil,
+        non_runtime_license: "AGPL-3.0-or-later",
+        snippet_paths: []
+      )
         AutodocTasks.new
         CargoTasks.new
         DocTasks.new
         TestTasks.new
-        gem = gem_from_settings
+        gem = RubyGem.found(gemspec_file:, name: gem_name, version_file:)
         BumpTasks.new(gem)
         ReleaseTasks.new(gem)
         WebsiteTasks.new(gem)
         LintTasks.new(gem)
-        licensing = licensing_from_settings(gem)
+        licensing = Licensing.of(gem.spec, snippets: snippet_paths, non_runtime: non_runtime_license)
         LicenseTasks.new(licensing)
         ReuseTasks.new(licensing)
       end
@@ -128,68 +129,6 @@ module RatatuiRuby
         TaskScope.new.load(File.expand_path("devtools/#{subdir}", __dir__))
       end
 
-      # Returns the gem name, auto-discovered from gemspec if not set.
-      #
-      # Tasks need to know which gem they're operating on. Auto-discovery from
-      # gemspec files means zero configuration for standard layouts. Override
-      # via <tt>gem_name=</tt> if needed.
-      def gem_name
-        gem_from_settings.name
-      end
-
-      # Returns the path to the gemspec file.
-      #
-      # Tasks parse the gemspec for metadata. Auto-discovery finds the single
-      # <tt>.gemspec</tt> file in the project root. Override via
-      # <tt>gemspec_file=</tt> for non-standard layouts.
-      def gemspec_file
-        gem_from_settings.gemspec_file
-      end
-
-      # Returns the path to the version.rb file.
-      #
-      # Version bumping needs the version file location. Auto-discovery finds
-      # it in the standard <tt>lib/*/</tt> path. Override via
-      # <tt>version_file=</tt> for non-standard layouts.
-      def version_file
-        gem_from_settings.version_file
-      end
-
-      # The license for code apps don't link.
-      #
-      # An app links the code it requires and the extensions it compiles.
-      # The license tasks give that code the license in your gemspec. Tests,
-      # tasks, scripts, type signatures, and examples never become part of
-      # an app, so they get this license.
-      #
-      # Defaults to <tt>"AGPL-3.0-or-later"</tt>. Set
-      # <tt>non_runtime_license=</tt> to license them differently, as a
-      # commercial gem would.
-      #
-      # === Example
-      #
-      #   RatatuiRuby::Devtools.non_runtime_license = "LicenseRef-Commercial"
-      #
-      def non_runtime_license
-        @non_runtime_license ||= "AGPL-3.0-or-later"
-      end
-
-      # Path prefixes for code licensed like the snippets in your docs.
-      #
-      # Some examples are snippets grown large. App developers copy them
-      # whole into their own apps, so they need the same freedom as a
-      # snippet. The license tasks give code under these prefixes MIT-0.
-      #
-      # Defaults to none.
-      #
-      # === Example
-      #
-      #   RatatuiRuby::Devtools.snippet_paths = %w[examples/widget_ examples/verify_]
-      #
-      def snippet_paths
-        @snippet_paths ||= []
-      end
-
       # Returns the path to the templates directory.
       #
       # Scaffolding commands copy files from templates. This method provides
@@ -204,14 +143,6 @@ module RatatuiRuby
       # method provides the absolute path regardless of caller location.
       def tasks_path
         File.expand_path("devtools/tasks", __dir__)
-      end
-
-      private def licensing_from_settings(gem)
-        Licensing.of(gem.spec, snippets: snippet_paths, non_runtime: non_runtime_license)
-      end
-
-      private def gem_from_settings
-        RubyGem.found(gemspec_file: @gemspec_file, name: @gem_name, version_file: @version_file)
       end
     end
   end
