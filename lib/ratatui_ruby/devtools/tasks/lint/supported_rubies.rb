@@ -7,8 +7,8 @@
 
 # The Ruby versions a gemspec supports.
 class SupportedRubies < Data.define(:requirement) # :nodoc:
-  def self.of(gemspec_path)
-    new(requirement: Gem::Specification.load(gemspec_path).required_ruby_version)
+  def self.of(spec)
+    new(requirement: spec.required_ruby_version)
   end
 
   def oldest
