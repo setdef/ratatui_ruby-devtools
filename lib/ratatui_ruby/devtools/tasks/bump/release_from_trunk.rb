@@ -10,11 +10,11 @@ require_relative "release_branch"
 
 # ReleaseFromTrunk creates a release branch, releases there, syncs trunk, returns to release branch.
 class ReleaseFromTrunk < BumpWorkflow
-  private def prepare(segment)
+  private def prepare
     @branch = ReleaseBranch.for_version(target)
 
     puts "Creating release branch: #{@branch.name}"
-    puts "Bumping #{segment}: #{@gem.version} -> #{target}"
+    puts "Bumping #{@segment}: #{@gem.version} -> #{target}"
 
     @repository.create_branch(@branch.name)
   end

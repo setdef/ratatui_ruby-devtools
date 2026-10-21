@@ -87,6 +87,21 @@ class FixtureRepository
     self.class.git("branch", name)
   end
 
+  # Creates the branch at HEAD, or names the first commit's branch, and
+  # switches to it.
+  def start_branch(name)
+    self.class.git("checkout", "-q", "-b", name)
+  end
+
+  def current_branch
+    self.class.git("branch", "--show-current").strip
+  end
+
+  # The file as +branch+ has it, whichever branch is checked out.
+  def file_on(branch, path)
+    self.class.git("show", "#{branch}:#{path}")
+  end
+
   def tags
     self.class.git("tag").split
   end

@@ -10,15 +10,8 @@ require_relative "bump_workflow"
 # Before 1.0 there is no older series to patch, so every release happens on
 # trunk and no release branch is cut.
 class UnbranchedRelease < BumpWorkflow # :nodoc:
-  private def assert_can_bump!(segment)
-    @repository.assert_pristine!
-    return if @repository.on_trunk?
-
-    raise ArgumentError, "Cannot bump:#{segment} from #{@repository.current_branch}. Switch to trunk first."
-  end
-
-  private def prepare(segment)
-    puts "Bumping #{segment}: #{@gem.version} -> #{target}"
+  private def prepare
+    puts "Bumping #{@segment}: #{@gem.version} -> #{target}"
   end
 
   private def finalize

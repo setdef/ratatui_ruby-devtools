@@ -13,28 +13,33 @@ require_relative "changelog"
 # release_on_branch, finalize.
 class BumpWorkflow # :nodoc:
   # From 1.0 on, each minor version gets a release branch, so its users can
-  # take patch releases without the next minor's changes.
+  # take patch releases without the next minor's changes. The version a bump
+  # releases decides which branch it belongs on, whichever segment named it:
+  # a patch bump that finishes 1.0.0-beta.1 opens the 1.0 series.
   def self.for(gem, segment)
-    workflow = if !gem.version.next(segment).stable?
+    target = gem.version.next(segment)
+    workflow = if !target.stable?
       UnbranchedRelease
-    elsif segment == :patch
-      PatchRelease
-    else
+    elsif target.patch.zero?
       ReleaseFromTrunk
+    else
+      PatchRelease
     end
-    workflow.new(gem:)
+    workflow.new(gem:, segment:, target:)
   end
 
-  def initialize(gem:, repository: Repository.new)
+  def initialize(gem:, segment:, target:, repository: Repository.new)
     @gem = gem
+    @segment = segment
+    @target = target
     @repository = repository
   end
 
-  def call(segment)
-    assert_can_bump!(segment)
-    @target = @gem.version.next(segment)
+  def call
+    @repository.assert_pristine!
+    assert_can_bump!
 
-    prepare(segment)
+    prepare
     release_on_branch
     finalize
   end
@@ -49,8 +54,14 @@ class BumpWorkflow # :nodoc:
     @repository.commit_all(@commit_message)
   end
 
+  # Every release but a patch to an older series happens on trunk.
+  private def assert_can_bump!
+    return if @repository.on_trunk?
+
+    raise ArgumentError, "Cannot bump:#{@segment} from #{@repository.current_branch}. Switch to trunk first."
+  end
+
   # Template methods for subclasses
-  private def assert_can_bump!(segment) = @repository.assert_can_bump!(segment)
-  private def prepare(segment) = nil
+  private def prepare = nil
   private def finalize = nil
 end

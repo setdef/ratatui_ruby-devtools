@@ -123,11 +123,11 @@ Every bump commits the release for you and refuses to start on the wrong branch 
 
 Before 1.0, your gem is in initial development, and its API can change in any release. Those releases are still normal versions, so `gem install` and Bundler find them. A new gem starts at `0.0.0`, so its first `bump:patch` or `bump:minor` releases `0.0.1` or `0.1.0`.
 
-A prerelease is different. `1.2.0-beta.1` is a candidate for `1.2.0`, and users get it only with `gem install --pre` or a requirement that names a prerelease. The bump tasks never make one on their own. Set one with `bump:exact[1.2.0-beta.1]`, and `bump:patch` or `bump:minor` later releases it as `1.2.0`.
+A prerelease is different. `1.2.0-beta.1` is a candidate for `1.2.0`, and users get it only with `gem install --pre` or a requirement that names a prerelease. The bump tasks never make one on their own. Set one on trunk with `bump:exact[1.2.0-beta.1]`. A bump from there that reaches `1.2.0` releases it, whether you run `bump:patch` or `bump:minor`.
 
 Before 1.0, every release comes from trunk. Run any bump there.
 
-From 1.0 on, each minor version gets a release branch, so its users can take patch releases without the next minor's changes. Run `bump:minor` or `bump:major` on trunk: it creates `release/X.Y`, commits the release there, imports the release into trunk, and commits that too. Run `bump:patch` on the release branch it fixes. The first `bump:major` to 1.0 starts this workflow.
+From 1.0 on, each minor version gets a release branch, so its users can take patch releases without the next minor's changes. A bump that releases a new minor or major version, one ending in `.0`, runs on trunk: it creates `release/X.Y`, commits the release there, imports the release into trunk, and commits that too. A bump that releases a patch runs on the release branch it fixes. The version decides, not the task: finishing `1.2.0-beta.1` releases `1.2.0`, so even `bump:patch` runs on trunk and creates `release/1.2`. The first release of 1.0 starts this workflow.
 
 
 ## Executables

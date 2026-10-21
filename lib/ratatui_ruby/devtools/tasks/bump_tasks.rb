@@ -25,17 +25,17 @@ class BumpTasks < Rake::TaskLib # :nodoc:
     namespace :bump do
       desc "Bump major version"
       task :major do
-        BumpWorkflow.for(@gem, :major).call(:major)
+        BumpWorkflow.for(@gem, :major).call
       end
 
       desc "Bump minor version"
       task :minor do
-        BumpWorkflow.for(@gem, :minor).call(:minor)
+        BumpWorkflow.for(@gem, :minor).call
       end
 
       desc "Bump patch version"
       task :patch do
-        BumpWorkflow.for(@gem, :patch).call(:patch)
+        BumpWorkflow.for(@gem, :patch).call
       end
 
       desc "Set exact version (e.g. rake bump:exact[0.1.0])"

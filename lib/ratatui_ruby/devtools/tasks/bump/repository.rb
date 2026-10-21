@@ -118,18 +118,6 @@ class Repository # :nodoc:
     system("git checkout #{name}", exception: true)
   end
 
-  def assert_can_bump!(segment)
-    assert_pristine!
-
-    if on_trunk? && segment == :patch
-      raise ArgumentError, "Cannot bump:patch from trunk. Use a release branch."
-    end
-
-    if !on_trunk? && [:minor, :major].include?(segment)
-      raise ArgumentError, "Cannot bump:#{segment} from #{current_branch}. Switch to trunk first."
-    end
-  end
-
   def assert_pristine!
     return if `git status --porcelain`.strip.empty?
 
