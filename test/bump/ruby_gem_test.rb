@@ -19,6 +19,25 @@ class RubyGemTest < DevtoolsTest
     end
   end
 
+  # A repository whose stable branch holds +text+ as the version file, or
+  # has no stable branch when +text+ is nil.
+  StableRepository = Data.define(:text) do
+    def stable_file(path)
+      text if path == "lib/my_gem/version.rb"
+    end
+  end
+
+  def test_reads_what_stable_released_as_rubygems_orders_it
+    in_gem("my_gem.gemspec" => "") do
+      gem = RubyGem.found
+
+      assert_equal Gem::Version.new("1.0.0.pre.beta.1"), gem.stable_version(StableRepository.new(text: %(VERSION = "1.0.0-beta.1"\n)))
+      assert_equal Gem::Version.new("0.0.1.pre.1"), gem.stable_version(StableRepository.new(text: %(VERSION = "0.0.1.pre.1"\n)))
+      assert_nil gem.stable_version(StableRepository.new(text: "# Soon.\n"))
+      assert_nil gem.stable_version(StableRepository.new(text: nil))
+    end
+  end
+
   def test_nests_the_version_file_of_a_gem_with_a_dash
     in_gem("my_gem-kit.gemspec" => "", "lib/my_gem/kit/version.rb" => "", "lib/other/version.rb" => "") do
       assert_equal "lib/my_gem/kit/version.rb", RubyGem.found.version_file

@@ -35,11 +35,12 @@ class Manifest < Data.define(:path, :pattern)
 
   # Returns the current version from this manifest.
   def version
-    content = read
-    match = content.match(pattern)
-    raise "Version missing in manifest #{path}" unless match
+    SemVer.parse(written)
+  end
 
-    SemVer.parse(match[0])
+  # Returns the version exactly as this manifest writes it.
+  def written
+    read[pattern] or raise "Version missing in manifest #{path}"
   end
 
   # Writes a new version to this manifest.

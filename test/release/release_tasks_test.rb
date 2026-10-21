@@ -6,6 +6,7 @@
 #++
 
 require "test_helper"
+require "delegate"
 require "ratatui_ruby/devtools/tasks/release_tasks"
 
 class ReleaseTasksTest < DevtoolsTest
@@ -19,10 +20,11 @@ class ReleaseTasksTest < DevtoolsTest
 
   def test_adds_to_bundlers_release_task_when_there_is_one
     with_rake do
-      release = Rake::Task.define_task(:release)
+      release = Rake::Task.define_task(release: :build)
       ReleaseTasks.new(gem)
 
       assert_equal 1, release.actions.size
+      assert_equal %w[release:check_version build], release.prerequisites
     end
   end
 
@@ -76,6 +78,36 @@ class ReleaseTasksTest < DevtoolsTest
     end
   end
 
+  def test_moves_stable_past_a_version_from_before_semver
+    in_released_repository("0.1.0", stable: "0.0.1.pre.1") do |repository|
+      capture_subprocess_io { Rake::Task["release:update_stable"].invoke }
+
+      assert_equal repository.commit_of("v0.1.0"), repository.origin.branch_commit("stable")
+    end
+  end
+
+  def test_refuses_a_version_that_is_not_semver_before_bundler_publishes
+    in_released_repository("1.0.0.beta.1") do |repository|
+      stable = repository.origin.branch_commit("stable")
+
+      error = assert_raises(ArgumentError) { Rake::Task["release"].invoke }
+
+      assert_equal "1.0.0.beta.1 is not SemVer. Put the prerelease after a hyphen, like 1.0.0-beta.1.", error.message
+      refute Rake::Task["build"].already_invoked
+      assert_equal %w[v1.0.0.beta.1], repository.tags
+      assert_equal stable, repository.origin.branch_commit("stable")
+    end
+  end
+
+  def test_refuses_a_version_written_short_before_bundler_publishes
+    in_released_repository("1.2") do
+      error = assert_raises(ArgumentError) { Rake::Task["release"].invoke }
+
+      assert_equal "lib/fixture/version.rb says 1.2. Write it as 1.2.0 before releasing.", error.message
+      refute Rake::Task["build"].already_invoked
+    end
+  end
+
   def test_the_release_hook_releases_native_gems_from_the_tagged_commit_and_moves_stable
     crate = RecordingCrate.new
     in_released_repository("1.1.0", crate:) do |repository|
@@ -115,14 +147,21 @@ class ReleaseTasksTest < DevtoolsTest
     end
   end
 
-  # A gem as ReleaseTasks sees it, with a crate the test chooses.
-  ReleasedGem = Struct.new(:version_file, :crate)
+  # The fixture gem, with a crate the test chooses.
+  class ReleasedGem < SimpleDelegator
+    attr_reader :crate
+
+    def initialize(gem, crate)
+      super(gem)
+      @crate = crate
+    end
+  end
 
   # Commits the previous release, which origin's stable branch holds, and
   # makes it the local stable branch too if +stable+ names its version. Then
   # commits +version+ and tags it as +tag+ the way Bundler's release does,
-  # pushed to origin. Defines Bundler's release task and the release tasks
-  # for the block.
+  # pushed to origin. Defines Bundler's release task, which builds and
+  # publishes in its prerequisites, and the release tasks for the block.
   private def in_released_repository(version, stable: nil, tag: "v#{version}", crate: NoCrate.new)
     with_rake do
       FixtureRepository.open do |repository|
@@ -137,8 +176,9 @@ class ReleaseTasksTest < DevtoolsTest
         repository.tag(tag, message: "Version #{version}")
         repository.push_branch("trunk")
         repository.push_tag(tag)
-        Rake::Task.define_task(:release)
-        ReleaseTasks.new(ReleasedGem.new("lib/fixture/version.rb", crate))
+        Rake::Task.define_task(:build)
+        Rake::Task.define_task(release: :build)
+        ReleaseTasks.new(ReleasedGem.new(gem, crate))
         yield repository
       end
     end

@@ -89,6 +89,18 @@ class SemVer
     SemVer.new(new_segments)
   end
 
+  # Returns the git tag that names this version, such as <tt>v1.0.0-beta.1</tt>.
+  def to_tag
+    "v#{self}"
+  end
+
+  # Returns the version as RubyGems orders it. RubyGems writes
+  # <tt>1.0.0-beta.1</tt> as <tt>1.0.0.pre.beta.1</tt>, and puts it before
+  # <tt>1.0.0</tt>.
+  def to_gem_version
+    Gem::Version.new(to_s)
+  end
+
   # Returns the version as a string.
   def to_s
     base = @segments.join(".")

@@ -49,6 +49,24 @@ class RubyGem < Data.define(:name, :gemspec_file, :version_file) # :nodoc:
     manifest.version
   end
 
+  # Bundler tags a release with the version as written, and the release
+  # tasks look for its SemVer tag. A bump reads 1.2 as 1.2.0 because it
+  # rewrites the file, but a release tags the file as it stands.
+  def release_version
+    written = manifest.written
+    version.tap do |full|
+      raise ArgumentError, "#{version_file} says #{written}. Write it as #{full} before releasing." if full.to_s != written
+    end
+  end
+
+  # What the stable branch released, or nil before the first release. Stable
+  # can still hold a version from before the gem used SemVer, which only
+  # RubyGems reads.
+  def stable_version(repository)
+    written = repository.stable_file(version_file)&.[](VERSION)
+    Gem::Version.new(written) if written
+  end
+
   def update_version(target)
     [manifest, *crate.manifests].each { |manifest| manifest.write(target) }
     crate.refresh

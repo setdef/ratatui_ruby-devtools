@@ -28,58 +28,50 @@ class ReleaseTasks < Rake::TaskLib # :nodoc:
 
       desc "Update stable branch to match release and set as default"
       task :update_stable do
-        # Read version to determine tag
-        version_file = @gem.version_file
-        version_content = File.read(version_file)
-        version = version_content.match(/VERSION = "(.+?)"/)[1]
-        tag_name = "v#{version}"
+        version = @gem.release_version
 
-        # Verify that the version file matches the actual git tag
-        # This prevents updating stable to the wrong version if the release failed
+        # A release that failed leaves the version file ahead of the tags, and
+        # stable would then point at the wrong version.
         latest_tag = @repository.latest_tag
-        if latest_tag != tag_name
-          abort "Fatal: Version mismatch! '#{version_file}' says #{tag_name}, but the latest git tag is #{latest_tag}."
+        if latest_tag != version.to_tag
+          abort "Fatal: Version mismatch! '#{@gem.version_file}' says #{version.to_tag}, " \
+            "but the latest git tag is #{latest_tag}."
         end
 
-        # Get current stable version (if stable branch exists)
-        stable_version_str = @repository.stable_file(version_file)&.match(/VERSION = "(.+?)"/)&.[](1)
-        if stable_version_str
-          stable_version = Gem::Version.new(stable_version_str)
-          new_version = Gem::Version.new(version)
-
-          if new_version <= stable_version
-            puts "Skipping stable update: #{version} is not newer than current stable #{stable_version_str}"
-            next
-          end
+        stable = @gem.stable_version(@repository)
+        if stable && version.to_gem_version <= stable
+          puts "Skipping stable update: #{version} is not newer than current stable #{stable}"
+          next
         end
 
-        puts "Updating stable branch to point to #{tag_name}..."
-        @repository.move_stable(@repository.released_commit(tag_name))
+        puts "Updating stable branch to point to #{version.to_tag}..."
+        @repository.move_stable(@repository.released_commit(version.to_tag))
       end
     end
 
     if Rake::Task.task_defined?("release")
-      Rake::Task["release"].enhance do
-        # Replace Bundler's normalized tag with semver-style for prerelease versions.
-        # Bundler creates tags using normalized Gem::Version (e.g., v1.0.0.pre.beta.1).
-        # Semver uses hyphens (e.g., v1.0.0-beta.1). We want only the semver tag.
-        version_file = @gem.version_file
-        version_content = File.read(version_file)
-        version = version_content.match(/VERSION = "(.+?)"/)[1]
+      release = Rake::Task["release"]
 
-        if version.include?("-")
-          normalized_tag = "v#{Gem::Version.new(version)}"
-          semver_tag = "v#{version}"
+      # Bundler tags and publishes in the release task's prerequisites, so a
+      # version its tag can't name has to stop the release before they run.
+      task "release:check_version" do
+        @gem.release_version
+      end
+      release.prerequisites.unshift("release:check_version")
 
-          if normalized_tag != semver_tag
-            puts "Replacing normalized tag #{normalized_tag} with semver tag #{semver_tag}..."
-            @repository.delete_tag(normalized_tag)
-            @repository.tag_head(semver_tag)
-          end
+      release.enhance do
+        version = @gem.release_version
+
+        # Bundler tags the release v plus the version as RubyGems writes it, so
+        # a prerelease gets a tag like v1.0.0.pre.beta.1 that isn't SemVer.
+        normalized_tag = "v#{version.to_gem_version}"
+        if normalized_tag != version.to_tag
+          puts "Replacing normalized tag #{normalized_tag} with semver tag #{version.to_tag}..."
+          @repository.delete_tag(normalized_tag)
+          @repository.tag_head(version.to_tag)
         end
 
-        release_sha = @repository.released_commit("v#{version}")
-        @gem.crate.release_native_gems(version:, sha: release_sha)
+        @gem.crate.release_native_gems(version: version.to_s, sha: @repository.released_commit(version.to_tag))
 
         Rake::Task["release:update_stable"].invoke
       end
