@@ -15,7 +15,7 @@ class ChangedFilesTest < DevtoolsTest
       repository.gemspec(license: "LGPL-3.0-or-later")
       repository.commit(date: "2024-06-01")
 
-      assert_equal ["No changed Markdown, Ruby, RBS, or Rust files to process"], license
+      assert_equal ["No changed Markdown, Ruby, RBS, or Rust files to process"], license(repository)
     end
   end
 
@@ -48,7 +48,7 @@ class ChangedFilesTest < DevtoolsTest
         "Added header: sig/fixture/modified.rbs",
         "Processing 1 changed Rust file(s)...",
         "Added header: ext/fixture/src/modified.rs",
-      ], license
+      ], license(repository)
       assert_equal "class Kept; end\n", repository.read("lib/kept.rb")
       assert_includes repository.read("lib/untracked.rb"), "SPDX-FileCopyrightText: #{this_year} Kerrick Long"
     end
@@ -61,15 +61,15 @@ class ChangedFilesTest < DevtoolsTest
       repository.write("lib/thing.rb", "# Makes things.\n#\n#   Thing.new\nclass Thing; end\n")
       repository.write("doc/guide.md", "# Guide\n\n```ruby\nputs 1\n```\n")
 
-      messages = license
+      messages = license(repository)
 
       assert_includes messages, "Updated: lib/thing.rb (1 code block(s))"
       assert_includes messages, "Updated: doc/guide.md (1 code block(s))"
     end
   end
 
-  private def license
-    ChangedFiles.new(Repository.new).license
+  private def license(repository)
+    ChangedFiles.new(Repository.new, repository.licensing).license
   end
 end
 # REUSE-IgnoreEnd

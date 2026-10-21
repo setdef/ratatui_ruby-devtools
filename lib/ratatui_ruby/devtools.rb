@@ -8,6 +8,8 @@
 require_relative "devtools/task_scope"
 require_relative "devtools/tasks/bump/ruby_gem"
 require_relative "devtools/tasks/bump_tasks"
+require_relative "devtools/tasks/license/licensing"
+require_relative "devtools/tasks/license_tasks"
 require_relative "devtools/tasks/lint_tasks"
 require_relative "devtools/tasks/release_tasks"
 require_relative "devtools/tasks/website_tasks"
@@ -83,6 +85,7 @@ module RatatuiRuby
         ReleaseTasks.new(gem)
         WebsiteTasks.new(gem)
         LintTasks.new(gem)
+        LicenseTasks.new(licensing_from_settings(gem))
       end
 
       # Loads website hosting Rake tasks (build, serve, deploy).
@@ -191,6 +194,10 @@ module RatatuiRuby
       # method provides the absolute path regardless of caller location.
       def tasks_path
         File.expand_path("devtools/tasks", __dir__)
+      end
+
+      private def licensing_from_settings(gem)
+        Licensing.of(gem.spec, snippets: snippet_paths, non_runtime: non_runtime_license)
       end
 
       private def gem_from_settings

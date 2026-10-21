@@ -11,8 +11,8 @@ require_relative "ruby_header_syntax"
 require_relative "snippet_file"
 
 class RubyFiles < Data.define(:files) # :nodoc:
-  def self.changed(repository)
-    new(files: LicensedFile.changed(RubyHeaderSyntax.new, repository:))
+  def self.changed(repository, licensing)
+    new(files: LicensedFile.changed(RubyHeaderSyntax.new(licensing), repository:))
   end
 
   def label

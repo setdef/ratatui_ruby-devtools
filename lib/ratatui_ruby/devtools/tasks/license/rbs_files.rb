@@ -9,8 +9,8 @@ require_relative "licensed_file"
 require_relative "rbs_header_syntax"
 
 class RbsFiles < Data.define(:files) # :nodoc:
-  def self.changed(repository)
-    new(files: LicensedFile.changed(RbsHeaderSyntax.new, repository:))
+  def self.changed(repository, licensing)
+    new(files: LicensedFile.changed(RbsHeaderSyntax.new(licensing), repository:))
   end
 
   def label

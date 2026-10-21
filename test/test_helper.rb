@@ -72,6 +72,11 @@ class FixtureRepository
     self.class.git("commit", "-q", "--no-verify", "-m", date, env:)
   end
 
+  # The licensing of the gem #gemspec wrote.
+  def licensing(snippets: [], non_runtime: "AGPL-3.0-or-later")
+    Licensing.of(Gem::Specification.load(File.expand_path("fixture.gemspec")), snippets:, non_runtime:)
+  end
+
   # A gemspec like the ecosystem's: it ships what git tracks outside the
   # directories apps never see.
   def gemspec(license:, extensions: [])

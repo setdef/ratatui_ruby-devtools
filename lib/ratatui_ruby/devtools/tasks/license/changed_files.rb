@@ -11,12 +11,15 @@ require_relative "rbs_files"
 require_relative "ruby_files"
 require_relative "rust_files"
 
-class ChangedFiles < Data.define(:repository) # :nodoc:
-  LANGUAGES = [MarkdownFiles, RubyFiles, RbsFiles, RustFiles].freeze
-
+class ChangedFiles < Data.define(:repository, :licensing) # :nodoc:
   # Licenses what changed and says what it did.
   def license
-    languages = LANGUAGES.map { |language| language.changed(repository) }
+    languages = [
+      MarkdownFiles.changed(repository),
+      RubyFiles.changed(repository, licensing),
+      RbsFiles.changed(repository, licensing),
+      RustFiles.changed(repository, licensing),
+    ]
     changed = languages.reject { |language| language.count.zero? }
     return ["No changed #{sentence(languages.map(&:label))} files to process"] if changed.empty?
 

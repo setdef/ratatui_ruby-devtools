@@ -9,8 +9,8 @@ require_relative "licensed_file"
 require_relative "rust_header_syntax"
 
 class RustFiles < Data.define(:files) # :nodoc:
-  def self.changed(repository)
-    new(files: LicensedFile.changed(RustHeaderSyntax.new, repository:))
+  def self.changed(repository, licensing)
+    new(files: LicensedFile.changed(RustHeaderSyntax.new(licensing), repository:))
   end
 
   def label
