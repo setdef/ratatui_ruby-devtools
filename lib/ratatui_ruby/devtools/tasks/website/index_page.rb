@@ -44,10 +44,7 @@ class IndexPage
     template_path = File.expand_path("../resources/index.html.erb", __dir__)
     template = File.read(template_path)
 
-    versions = @versions
-    branding = @branding
-    # project_name is used in the ERB
-    html_content = ERB.new(template).result(binding)
+    html_content = ERB.new(template).result_with_hash(versions: @versions, branding: @branding, project_name:)
 
     File.write(path, html_content)
   end
