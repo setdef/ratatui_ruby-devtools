@@ -6,13 +6,16 @@
 #++
 
 require_relative "devtools/task_scope"
+require_relative "devtools/tasks/autodoc_tasks"
 require_relative "devtools/tasks/bump/ruby_gem"
 require_relative "devtools/tasks/bump_tasks"
+require_relative "devtools/tasks/cargo_tasks"
 require_relative "devtools/tasks/license/licensing"
 require_relative "devtools/tasks/license_tasks"
 require_relative "devtools/tasks/lint_tasks"
 require_relative "devtools/tasks/release_tasks"
 require_relative "devtools/tasks/reuse_tasks"
+require_relative "devtools/tasks/test_tasks"
 require_relative "devtools/tasks/website_tasks"
 require_relative "devtools/version"
 
@@ -80,7 +83,10 @@ module RatatuiRuby
       def install_gem_tasks!(gemspec_file: nil, gem_name: nil, version_file: nil, non_runtime_license: nil, snippet_paths: nil)
         { gemspec_file:, gem_name:, version_file:, non_runtime_license:, snippet_paths: }
           .compact.each { |setting, value| public_send(:"#{setting}=", value) }
+        AutodocTasks.new
+        CargoTasks.new
         load_tasks_from("tasks")
+        TestTasks.new
         gem = gem_from_settings
         BumpTasks.new(gem)
         ReleaseTasks.new(gem)
