@@ -21,7 +21,7 @@ class UnlicensedFiles # :nodoc:
   DOC_EXTENSIONS = %w[md txt].freeze
   DOC_LICENSE = "CC-BY-SA-4.0"
 
-  def initialize(tool, repository, overrides, licensing = nil)
+  def initialize(tool, repository, overrides, licensing)
     @tool = tool
     @repository = repository
     @overrides = overrides
@@ -54,7 +54,7 @@ class UnlicensedFiles # :nodoc:
 
   private def license_for(path)
     case File.extname(path).delete_prefix(".")
-    when *CODE_EXTENSIONS then @overrides.fetch("REUSE_CODE_LICENSE") { licensing.license_for(path) }
+    when *CODE_EXTENSIONS then @overrides.fetch("REUSE_CODE_LICENSE") { @licensing.license_for(path) }
     when *DOC_EXTENSIONS then @overrides.fetch("REUSE_DOC_LICENSE", DOC_LICENSE)
     end
   end
@@ -65,9 +65,5 @@ class UnlicensedFiles # :nodoc:
 
   private def author
     @author ||= @repository.author
-  end
-
-  private def licensing
-    @licensing ||= Licensing.current
   end
 end

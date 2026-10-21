@@ -149,7 +149,7 @@ class RubyHeadersTest < DevtoolsTest
 
   def test_skips_a_named_file_in_another_language
     in_gem("lib/a.rb" => "class A; end\n") do
-      assert_empty LicensedFile.tracked(["lib/a.rb"], RustHeaderSyntax.new).flat_map(&:annotate)
+      assert_empty LicensedFile.tracked(["lib/a.rb"], RustHeaderSyntax.new(licensing)).flat_map(&:annotate)
     end
 
     assert_equal "class A; end\n", @files["lib/a.rb"]
@@ -170,7 +170,7 @@ class RubyHeadersTest < DevtoolsTest
   end
 
   private def annotate(paths = [])
-    LicensedFile.tracked(paths, RubyHeaderSyntax.new).flat_map(&:annotate)
+    LicensedFile.tracked(paths, RubyHeaderSyntax.new(licensing)).flat_map(&:annotate)
   end
 
   private def header(*copyrights, license:)

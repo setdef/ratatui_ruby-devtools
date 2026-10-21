@@ -13,14 +13,6 @@ require "rubygems"
 class Licensing < Data.define(:snippets, :linked, :runtime, :non_runtime) # :nodoc:
   SNIPPET = "MIT-0"
 
-  def self.current
-    of(
-      Gem::Specification.load(RatatuiRuby::Devtools.gemspec_file),
-      snippets: RatatuiRuby::Devtools.snippet_paths,
-      non_runtime: RatatuiRuby::Devtools.non_runtime_license
-    )
-  end
-
   def self.of(spec, snippets:, non_runtime:)
     new(
       snippets:,

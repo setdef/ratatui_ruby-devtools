@@ -69,7 +69,7 @@ class ChangedFilesTest < DevtoolsTest
   end
 
   private def license(repository)
-    ChangedFiles.new(Repository.new, repository.licensing).license
+    ChangedFiles.new(Repository.new, licensing).license
   end
 end
 # REUSE-IgnoreEnd

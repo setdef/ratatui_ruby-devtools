@@ -81,7 +81,7 @@ class RbsAndRustHeadersTest < DevtoolsTest
   end
 
   private def annotate(syntax)
-    LicensedFile.tracked([], syntax.new).flat_map(&:annotate)
+    LicensedFile.tracked([], syntax.new(licensing)).flat_map(&:annotate)
   end
 end
 # REUSE-IgnoreEnd

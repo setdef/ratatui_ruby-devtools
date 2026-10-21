@@ -13,6 +13,8 @@ require "ratatui_ruby/devtools/tasks/license/unlicensed_files"
 # REUSE-IgnoreStart
 class ReuseTest < DevtoolsTest
   KERRICK = "Kerrick Long <me@kerricklong.com>"
+  # For a gem outside any repository, whose files the overrides license.
+  ANY_LICENSING = Licensing.new(snippets: [], linked: ["lib/"], runtime: "MIT", non_runtime: "MIT")
 
   # Reports the paths it's given and records what it's asked to annotate.
   class RecordingTool
@@ -37,7 +39,7 @@ class ReuseTest < DevtoolsTest
   end
 
   def test_says_when_every_file_has_a_header
-    messages = UnlicensedFiles.new(RecordingTool.new([]), AnonymousRepository.new, {}).license
+    messages = UnlicensedFiles.new(RecordingTool.new([]), AnonymousRepository.new, {}, ANY_LICENSING).license
 
     assert_equal ["All files have REUSE headers!"], messages
   end
@@ -45,7 +47,7 @@ class ReuseTest < DevtoolsTest
   def test_gives_files_the_license_tasks_cover_their_headers
     tool = RecordingTool.new(%w[lib/a.rb sig/fixture/a.rbs doc/guide.md])
     in_gem("lib/a.rb" => "class A; end\n", "sig/fixture/a.rbs" => "class A\nend\n", "doc/guide.md" => "# Guide\n") do |repository|
-      messages = UnlicensedFiles.new(tool, Repository.new, {}).license
+      messages = UnlicensedFiles.new(tool, Repository.new, {}, licensing).license
 
       assert_equal ["  Added header: lib/a.rb", "  Added header: sig/fixture/a.rbs", "  Added header: doc/guide.md"], messages
       assert_empty tool.annotated
@@ -56,7 +58,7 @@ class ReuseTest < DevtoolsTest
   def test_asks_the_tool_for_other_files_with_the_license_tasks_licenses
     tool = RecordingTool.new(%w[ext/fixture/Cargo.toml .github/ci.yml doc/notes.txt Rakefile])
     in_gem("ext/fixture/Cargo.toml" => "", ".github/ci.yml" => "", "doc/notes.txt" => "", "Rakefile" => "") do
-      messages = UnlicensedFiles.new(tool, Repository.new, {}).license
+      messages = UnlicensedFiles.new(tool, Repository.new, {}, licensing).license
 
       assert_equal [
         ["ext/fixture/Cargo.toml", "LGPL-3.0-or-later", KERRICK],
@@ -72,7 +74,7 @@ class ReuseTest < DevtoolsTest
   def test_the_environment_overrides_the_tools_license_and_copyright
     tool = RecordingTool.new(%w[.github/ci.yml doc/notes.txt])
     overrides = { "REUSE_CODE_LICENSE" => "MIT", "REUSE_DOC_LICENSE" => "CC0-1.0", "REUSE_COPYRIGHT" => "Jane Doe" }
-    UnlicensedFiles.new(tool, AnonymousRepository.new, overrides).license
+    UnlicensedFiles.new(tool, AnonymousRepository.new, overrides, ANY_LICENSING).license
 
     assert_equal [[".github/ci.yml", "MIT", "Jane Doe"], ["doc/notes.txt", "CC0-1.0", "Jane Doe"]], tool.annotated
   end

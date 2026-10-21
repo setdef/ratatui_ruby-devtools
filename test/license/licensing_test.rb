@@ -39,8 +39,7 @@ class LicensingTest < DevtoolsTest
   end
 
   def test_examples_are_mit_0_only_under_snippet_paths
-    RatatuiRuby::Devtools.snippet_paths = %w[examples/widget_ sig/examples/widget_]
-    licensing = fixture_licensing(license: "LGPL-3.0-or-later")
+    licensing = fixture_licensing(license: "LGPL-3.0-or-later", snippets: %w[examples/widget_ sig/examples/widget_])
 
     assert_equal "MIT-0", licensing.license_for("examples/widget_a/app.rb")
     assert_equal "MIT-0", licensing.license_for("sig/examples/widget_a/app.rbs")
@@ -54,8 +53,7 @@ class LicensingTest < DevtoolsTest
   end
 
   def test_a_gem_can_license_what_apps_dont_link_differently
-    RatatuiRuby::Devtools.non_runtime_license = "LicenseRef-Commercial"
-    licensing = fixture_licensing(license: "LGPL-3.0-or-later")
+    licensing = fixture_licensing(license: "LGPL-3.0-or-later", non_runtime: "LicenseRef-Commercial")
 
     assert_equal "LicenseRef-Commercial", licensing.license_for("test/a_test.rb")
     assert_equal "LGPL-3.0-or-later", licensing.license_for("lib/fixture.rb")
@@ -87,14 +85,14 @@ class LicensingTest < DevtoolsTest
     end
   end
 
-  private def fixture_licensing(license:, extensions: [])
-    licensing = nil
+  private def fixture_licensing(license:, extensions: [], **)
+    result = nil
     FixtureRepository.open do |repository|
       repository.write("lib/fixture.rb", "")
       repository.gemspec(license:, extensions:)
       repository.commit(date: "2026-01-01")
-      licensing = Licensing.current
+      result = licensing(**)
     end
-    licensing
+    result
   end
 end
