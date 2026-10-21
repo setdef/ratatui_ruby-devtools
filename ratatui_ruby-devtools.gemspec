@@ -41,7 +41,7 @@ Gem::Specification.new do |spec|
 
   # Runtime dependencies (tools this gem provides)
   spec.add_dependency "inch", ">= 0.8"
-  spec.add_dependency "minitest", "~> 5.0"
+  spec.add_dependency "minitest", ">= 5.16", "< 7"
   spec.add_dependency "nokogiri", ">= 1.16"
   spec.add_dependency "ostruct", ">= 0.6"
   spec.add_dependency "rake", ">= 13.0"

@@ -11,5 +11,6 @@ source "https://rubygems.org"
 gemspec
 
 group :development do
+  gem "minitest-mock", "~> 5.27"
   gem "rubocop", "~> 1.0"
 end
