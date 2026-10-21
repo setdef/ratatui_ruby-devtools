@@ -31,7 +31,7 @@ class ChangedFilesTest < DevtoolsTest
       repository.commit(date: "2024-06-01")
       repository.write("lib/modified.rb", "class Modified; def x; end; end\n")
       repository.write("lib/staged.rb", "class Staged; def y; end; end\n")
-      FixtureRepository.git("add", "lib/staged.rb")
+      repository.stage("lib/staged.rb")
       repository.write("lib/untracked.rb", "class Untracked; end\n")
       repository.write("sig/fixture/modified.rbs", "class Modified\n  def x: () -> void\nend\n")
       repository.write("ext/fixture/src/modified.rs", "fn modified() { 1; }\n")

@@ -63,8 +63,13 @@ class FixtureRepository
     File.read(path)
   end
 
-  # Commits everything in the working tree as +author+ on +date+.
-  def commit(date:, author: KERRICK)
+  def stage(path)
+    self.class.git("add", path)
+  end
+
+  # Commits everything in the working tree as +author+ on +date+, with the
+  # date as its message unless it has one of its own.
+  def commit(date:, author: KERRICK, message: date)
     time = "#{date}T12:00:00Z"
     env = {
       "GIT_AUTHOR_NAME" => author.name,
@@ -75,7 +80,7 @@ class FixtureRepository
       "GIT_COMMITTER_DATE" => time,
     }
     self.class.git("add", "-A", env:)
-    self.class.git("commit", "-q", "--no-verify", "-m", date, env:)
+    self.class.git("commit", "-q", "--no-verify", "-m", message, env:)
   end
 
   # Tags the last commit, annotated when there's a +message+, as releases are.
@@ -100,6 +105,10 @@ class FixtureRepository
   # The file as +branch+ has it, whichever branch is checked out.
   def file_on(branch, path)
     self.class.git("show", "#{branch}:#{path}")
+  end
+
+  def branches
+    self.class.git("branch", "--format=%(refname:short)").split
   end
 
   def tags

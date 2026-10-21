@@ -70,7 +70,7 @@ class InstallTest < DevtoolsTest
     FixtureRepository.open do |repository|
       files.each { |path, text| repository.write(path, text) }
       repository.commit(date: "2024-06-01")
-      FixtureRepository.git("tag", "v0.9.0")
+      repository.tag("v0.9.0")
       yield repository
     end
   ensure

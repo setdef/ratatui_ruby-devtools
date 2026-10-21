@@ -136,11 +136,7 @@ class RubyHeadersTest < DevtoolsTest
     FixtureRepository.open do |repository|
       repository.gemspec(license: "LGPL-3.0-or-later")
       repository.write("lib/a.rb", "class A; end\n")
-      FixtureRepository.git("add", "-A")
-      FixtureRepository.git(
-        "commit", "-q", "--no-verify", "-m", "Add A\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
-        env: { "GIT_AUTHOR_DATE" => "2024-06-01T12:00:00Z", "GIT_COMMITTER_DATE" => "2024-06-01T12:00:00Z" }
-      )
+      repository.commit(date: "2024-06-01", message: "Add A\n\nCo-Authored-By: Claude <noreply@anthropic.com>")
       annotate
 
       assert_equal "#{header("2024 #{KERRICK}", license: 'LGPL-3.0-or-later')}class A; end\n", repository.read("lib/a.rb")

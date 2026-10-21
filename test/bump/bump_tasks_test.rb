@@ -77,7 +77,7 @@ class BumpTasksTest < DevtoolsTest
       bump(:minor, "rc")
 
       assert_equal %(VERSION = "1.2.0-rc.1"\n), repository.file_on("trunk", "lib/fixture/version.rb")
-      assert_equal %w[trunk], branches
+      assert_equal %w[trunk], repository.branches
     end
   end
 
@@ -96,7 +96,7 @@ class BumpTasksTest < DevtoolsTest
 
       assert_equal "trunk", repository.current_branch
       assert_equal %(VERSION = "0.3.0"\n), repository.file_on("trunk", "lib/fixture/version.rb")
-      assert_equal %w[trunk], branches
+      assert_equal %w[trunk], repository.branches
     end
   end
 
@@ -186,10 +186,6 @@ class BumpTasksTest < DevtoolsTest
 
   private def bump(segment, label = nil)
     capture_subprocess_io { Rake::Task["bump:#{segment}"].invoke(label) }
-  end
-
-  private def branches
-    FixtureRepository.git("branch", "--format=%(refname:short)").split
   end
 
   private def with_rake(&)
