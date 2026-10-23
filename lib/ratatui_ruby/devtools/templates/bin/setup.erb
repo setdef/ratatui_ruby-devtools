@@ -17,7 +17,7 @@ mise install
 <%- if has_rust -%>
 mise x -- rustup component add rustfmt clippy
 <%- end -%>
-mise x -- pip install reuse
+mise x -- pip install 'reuse[charset-normalizer]'
 mise x -- gem install bundler:4.0.3
 
 # A gem in the per-user gem directory may have been built for another Ruby,
