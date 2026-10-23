@@ -23,7 +23,7 @@ jobs:
       CI: "true"
       BINDGEN_EXTRA_CLANG_ARGS: "-include stdbool.h"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Override Ruby version in mise.toml
         shell: bash
@@ -47,7 +47,7 @@ jobs:
           rustup target add x86_64-pc-windows-gnu
 
       - name: Install toolchain via mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
 
       - name: Setup (Unix)
         if: runner.os != 'Windows'
@@ -63,7 +63,7 @@ jobs:
         run: mise x -- bundle exec rake
 
       - name: Upload compiled binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: native-${{ matrix.os }}-ruby${{ matrix.ruby }}
           path: lib/<%= ext_name %>/<%= ext_name %>.*
@@ -78,7 +78,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install Ruby via RubyInstaller (Windows)
         if: runner.os == 'Windows'
@@ -93,7 +93,7 @@ jobs:
 
       - name: Install toolchain via mise (Unix)
         if: runner.os != 'Windows'
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
 
       - name: Configure Windows mise (skip Ruby)
         if: runner.os == 'Windows'
@@ -103,11 +103,11 @@ jobs:
 
       - name: Install toolchain via mise (Windows)
         if: runner.os == 'Windows'
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
 
 <%- rubies.map { |r| r.split(".")[0..1].join(".") }.uniq.each do |minor| -%>
       - name: Download Ruby <%= minor %> binary
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: native-${{ matrix.os }}-ruby<%= minor %>
           path: lib/<%= ext_name %>/<%= minor %>
@@ -123,7 +123,7 @@ jobs:
         run: mise x -- bundle exec rake release:platform_gem
 
       - name: Upload gem artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gem-${{ matrix.os }}
           path: pkg/*.gem
