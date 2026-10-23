@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.4.0] - 2026-10-23
+
+### Added
+
 - **Changes too small for copyright**: The license tasks wrote a copyright notice for every commit author whose lines remained in a file, even when all they changed was a path or a typo, which no one can hold copyright in. List such commits in `.git-blame-ignore-revs`, and the license tasks blame their lines on the commits before them. Git reads that file only when each contributor configures it, so the license tasks pass it to `git blame` themselves.
 
 ### Changed
@@ -146,6 +156,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 [Unreleased]: https://github.com/setdef/ratatui_ruby-devtools/tree/HEAD
+[0.4.0]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.4.0
 [0.3.0]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.3.0
 [0.2.1]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.2.1
 [0.2.0]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.2.0

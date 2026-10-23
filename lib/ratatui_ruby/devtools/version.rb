@@ -8,6 +8,6 @@
 module RatatuiRuby
   module Devtools
     # Current version of the ratatui_ruby-devtools gem.
-    VERSION = "0.3.0"
+    VERSION = "0.4.0"
   end
 end
