@@ -128,10 +128,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-[Unreleased]: https://git.sr.ht/~kerrick/ratatui_ruby-devtools/refs/HEAD
-[0.2.1]: https://git.sr.ht/~kerrick/ratatui_ruby-devtools/refs/v0.2.1
-[0.2.0]: https://git.sr.ht/~kerrick/ratatui_ruby-devtools/refs/v0.2.0
-[0.1.3]: https://git.sr.ht/~kerrick/ratatui_ruby-devtools/refs/v0.1.3
-[0.1.2]: https://git.sr.ht/~kerrick/ratatui_ruby-devtools/refs/v0.1.2
-[0.1.1]: https://git.sr.ht/~kerrick/ratatui_ruby-devtools/refs/v0.1.1
-[0.1.0]: https://git.sr.ht/~kerrick/ratatui_ruby-devtools/refs/v0.1.0
+[Unreleased]: https://github.com/setdef/ratatui_ruby-devtools/tree/HEAD
+[0.2.1]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.2.1
+[0.2.0]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.2.0
+[0.1.3]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.1.3
+[0.1.2]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.1.2
+[0.1.1]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.1.1
+[0.1.0]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.1.0
