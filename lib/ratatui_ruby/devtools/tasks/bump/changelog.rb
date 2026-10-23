@@ -119,6 +119,6 @@ class Changelog
     match = changelog_content.match(pattern)
     return nil unless match
 
-    "## [#{version}]#{match[0].split("\n", 2).first.split(']', 2).last}\n#{match[1]}"
+    "## [#{version}]#{match[0].split("\n", 2).first.split(']', 2).last}\n#{match[1].rstrip}"
   end
 end

@@ -87,6 +87,7 @@ class UnreleasedSection
       entries_to_remove.include?(stripped)
     end
 
-    self.class.new(new_lines.join)
+    # A removed entry leaves the blank lines that set it apart.
+    self.class.new(new_lines.join.gsub(/\n{3,}/, "\n\n").strip)
   end
 end

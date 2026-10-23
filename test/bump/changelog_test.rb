@@ -98,6 +98,73 @@ class ChangelogTest < DevtoolsTest
     end
   end
 
+  def test_imports_a_release_without_leaving_blank_lines
+    released = <<~MARKDOWN
+      ## [Unreleased]
+
+      ### Added
+
+      ## [1.1.0] - 2026-02-01
+
+      ### Added
+
+      - Released thing.
+
+      ### Fixed
+
+      - Released fix.
+
+      ## [1.0.0] - 2026-01-01
+
+      [Unreleased]: https://github.com/me/gem/tree/HEAD
+    MARKDOWN
+    in_changelog(<<~MARKDOWN) do |changelog|
+      ## [Unreleased]
+
+      ### Added
+
+      - Released thing.
+      - Unreleased thing.
+
+      ### Fixed
+
+      - Released fix.
+
+      ## [1.0.0] - 2026-01-01
+
+      [Unreleased]: https://github.com/me/gem/tree/HEAD
+      [1.0.0]: https://github.com/me/gem/releases/tag/v1.0.0
+    MARKDOWN
+      changelog.import_release(SemVer.parse("1.1.0"), released)
+
+      assert_equal <<~MARKDOWN, File.read("CHANGELOG.md")
+        ## [Unreleased]
+
+        ### Added
+
+        - Unreleased thing.
+
+        ### Fixed
+
+        ## [1.1.0] - 2026-02-01
+
+        ### Added
+
+        - Released thing.
+
+        ### Fixed
+
+        - Released fix.
+
+        ## [1.0.0] - 2026-01-01
+
+        [Unreleased]: https://github.com/me/gem/tree/HEAD
+        [1.1.0]: https://github.com/me/gem/releases/tag/v1.1.0
+        [1.0.0]: https://github.com/me/gem/releases/tag/v1.0.0
+      MARKDOWN
+    end
+  end
+
   def test_releases_a_changelog_with_nothing_released_yet
     in_changelog(<<~MARKDOWN) do |changelog|
       <!--
