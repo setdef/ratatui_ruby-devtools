@@ -7,7 +7,6 @@
 
 require "open3"
 require "rake/file_utils_ext"
-require "shellwords"
 require "tmpdir"
 
 class Repository # :nodoc:
@@ -38,11 +37,11 @@ class Repository # :nodoc:
   def on_trunk? = current_branch == TRUNK
 
   def current_branch
-    `git branch --show-current`.strip
+    git("branch", "--show-current").strip
   end
 
   def tracked_files(pattern)
-    `git ls-files '#{pattern}' 2>/dev/null`.split("\n")
+    git("ls-files", pattern).split("\n")
   end
 
   # The tracked files a syntax covers, under the given paths, or everywhere
@@ -68,26 +67,26 @@ class Repository # :nodoc:
   # untracked files. The staged diff also covers a repository with no commits.
   def changed_files
     [
-      `git diff --name-only --diff-filter=ACMR HEAD 2>/dev/null`,
-      `git diff --name-only --cached --diff-filter=ACMR 2>/dev/null`,
-      `git ls-files --others --exclude-standard`,
+      git("diff", "--name-only", "--diff-filter=ACMR", "HEAD"),
+      git("diff", "--name-only", "--cached", "--diff-filter=ACMR"),
+      git("ls-files", "--others", "--exclude-standard"),
     ].flat_map { |output| output.split("\n") }.uniq
   end
 
   def latest_tag
-    `git describe --tags --abbrev=0`.strip
+    git("describe", "--tags", "--abbrev=0").strip
   end
 
   # An annotated tag is an object of its own, and a branch can only point at
   # a commit.
   def released_commit(tag)
-    `git rev-parse #{tag}^{}`.strip
+    git("rev-parse", "#{tag}^{}").strip
   end
 
   # The file as the stable branch has it, or nil when there's no such branch
   # or file.
   def stable_file(path)
-    text = `git show #{STABLE}:#{path} 2>/dev/null`
+    text = git("show", "#{STABLE}:#{path}")
     text unless text.empty?
   end
 
@@ -113,25 +112,32 @@ class Repository # :nodoc:
   end
 
   def create_branch(name)
-    system("git checkout -b #{name}", exception: true)
+    system("git", "checkout", "-b", name, exception: true)
   end
 
   def checkout(name)
-    system("git checkout #{name}", exception: true)
+    system("git", "checkout", name, exception: true)
   end
 
   def assert_pristine!
-    return if `git status --porcelain`.strip.empty?
+    return if git("status", "--porcelain").strip.empty?
 
     raise ArgumentError, "Working tree is not clean. Commit or stash changes first."
   end
 
   def commit_all(message)
     msg_file = File.join(Dir.tmpdir, "ratatui_ruby_commit_msg_#{$$}.txt")
-    system("git add -A", exception: true)
+    system("git", "add", "-A", exception: true)
     File.write(msg_file, message)
-    system("git commit -F #{msg_file.shellescape}", exception: true)
+    system("git", "commit", "-F", msg_file, exception: true)
   ensure
     File.delete(msg_file) if msg_file && File.exist?(msg_file)
+  end
+
+  # Runs git directly rather than through a shell, whose quoting and
+  # redirection differ on Windows, and keeps its complaints out of the
+  # output it answers with.
+  private def git(*)
+    Open3.capture2("git", *, err: File::NULL).first
   end
 end
