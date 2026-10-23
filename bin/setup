@@ -6,15 +6,26 @@ set -euo pipefail
 IFS=$'\n\t'
 set -vx
 
-if command -v mise >/dev/null 2>&1; then
-  mise install
-  mise x -- pip install reuse
-  # A gem in the per-user gem directory may have been built for another Ruby,
-  # so install the bundle inside the repo instead.
-  mise x -- bundle config set --local path vendor/bundle
-  mise x -- bundle install
-  pre-commit install
-else
+if ! command -v mise >/dev/null 2>&1; then
   echo "mise isn't installed. Please install it to continue." >&2
   exit 1
+fi
+
+mise install
+mise x -- pip install reuse
+mise x -- gem install bundler:4.0.3
+
+# A gem in the per-user gem directory may have been built for another Ruby,
+# so install the bundle inside the repo instead.
+mise x -- bundle config set --local path vendor/bundle
+
+if [ "${CI:-}" = "true" ]; then
+  bundle config set --local frozen 'true'
+fi
+
+mise x -- bundle install
+
+if [ "${CI:-}" != "true" ]; then
+  pre-commit install
+  bundle exec rake rdoc
 fi

@@ -10,5 +10,6 @@
 /spec/reports/
 /tmp/
 /vendor/bundle/
+.mise.local.toml
 .DS_Store
 *.gem
