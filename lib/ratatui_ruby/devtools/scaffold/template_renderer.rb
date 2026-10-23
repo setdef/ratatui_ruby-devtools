@@ -18,11 +18,14 @@ class TemplateRenderer
   # [config] The ScaffoldConfig with gem parameters.
   # [templates_dir] Path to the ERB templates.
   # [output_dir] Path where rendered files are written.
-  def initialize(config, templates_dir, output_dir, update_mode: false)
+  # [update_mode] Whether to ask before overwriting a file that differs.
+  # [input] Where the answers to those questions come from.
+  def initialize(config, templates_dir, output_dir, update_mode: false, input: $stdin)
     @config = config
     @templates_dir = templates_dir
     @output_dir = output_dir
     @update_mode = update_mode
+    @input = input
   end
 
   # Renders all templates into the output directory.
@@ -95,7 +98,7 @@ class TemplateRenderer
       puts "  Conflict #{output_name}"
       show_diff(output_path, content)
       print "  Overwrite #{output_name}? [y/N] "
-      answer = $stdin.gets&.strip
+      answer = @input.gets&.strip
       unless answer&.match?(/^[Yy]/)
         puts "  Skipped #{output_name}"
         return
