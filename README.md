@@ -166,8 +166,6 @@ Devtools includes templates for scaffolding new ecosystem gems:
 | `AGENTS.md.erb` | AI agent instructions |
 | `.pre-commit-config.yaml` | Pre-commit hooks |
 | `Rakefile.erb` | Standard Rakefile |
-| `sourcehut.rake.erb` | SourceHut CI task |
-| `build.yml.erb` | SourceHut build manifest |
 | `gemspec.erb` | Standard gemspec |
 | `bin/setup.erb` | Setup script |
 | `mise.toml.erb` | Toolchain versions |

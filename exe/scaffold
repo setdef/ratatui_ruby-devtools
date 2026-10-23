@@ -216,14 +216,6 @@ class TemplateRenderer
   end
 
   private def copy_task_resources
-    resources_dir = File.join(@output_dir, "tasks", "resources")
-    tasks_dir = File.join(@output_dir, "tasks")
-    FileUtils.mkdir_p(resources_dir)
-
-    # Render ERB templates to tasks/resources/
-    render_template("tasks/resources/rubies.yml.erb", "tasks/resources/rubies.yml")
-    render_template("tasks/resources/index.html.erb", "tasks/resources/index.html.erb")
-
     # Render example_viewer.html.erb to tasks/
     render_template("tasks/example_viewer.html.erb", "tasks/example_viewer.html.erb")
 
