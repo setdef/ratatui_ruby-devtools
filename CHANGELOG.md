@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [0.3.0] - 2026-10-22
+
+### Added
+
 - **Rust SPDX headers**: Rust files in `ext/` had no license task, so you annotated them by hand and a wrong license slipped through easily. `rake license:headers:rs` now writes their SPDX headers, and `license:headers:all` and `license:new` run it too.
 - **RBS SPDX headers**: The Ruby header task also wrote headers into `.rbs` files, opening them with a `# frozen_string_literal: true` comment that means nothing in RBS. `rake license:headers:rbs` now writes their headers without it, and `license:headers:all` and `license:new` run it too. A signature loses the comment the next time its header changes.
 - **Lockfile Ruby check**: Bundler checks locked gems only against the Ruby that resolves them. A lockfile updated on your newest Ruby could hold gems your oldest supported Ruby can't install, and nothing failed until CI. `rake lint` now catches these gems and prints the `bundle lock` command that relocks them on the oldest Ruby.
@@ -131,6 +141,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 [Unreleased]: https://github.com/setdef/ratatui_ruby-devtools/tree/HEAD
+[0.3.0]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.3.0
 [0.2.1]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.2.1
 [0.2.0]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.2.0
 [0.1.3]: https://github.com/setdef/ratatui_ruby-devtools/releases/tag/v0.1.3
