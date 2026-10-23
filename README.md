@@ -219,6 +219,19 @@ RatatuiRuby::Devtools.install_gem_tasks!(
 ```
 <!-- SPDX-SnippetEnd -->
 
+Each header names the commit authors whose lines remain in the file, with the last year each touched them. Copyright protects only original expression, so a change too small to hold it, such as a corrected path, needs no notice. List its commit in `.git-blame-ignore-revs`, and the license tasks blame its lines on the commits before it, as GitHub's blame view does:
+
+<!-- SPDX-SnippetBegin -->
+<!--
+  SPDX-SnippetCopyrightText: 2026 Kerrick Long
+  SPDX-License-Identifier: MIT-0
+-->
+```text
+# Corrects the relative paths to examples/
+0123456789abcdef0123456789abcdef01234567
+```
+<!-- SPDX-SnippetEnd -->
+
 `rake reuse:fix` gives Ruby, RBS, Rust, and Markdown files the same headers the license tasks write. Environment variables set what it writes for other files:
 
 | Variable | Default |

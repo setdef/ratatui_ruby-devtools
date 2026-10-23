@@ -198,6 +198,23 @@ class RubyHeadersTest < DevtoolsTest
     end
   end
 
+  # A fix too small to hold copyright, such as a corrected path, needs no
+  # notice. Listing its commit in .git-blame-ignore-revs blames its lines on
+  # the commits before it, as GitHub's blame view does.
+  def test_credits_no_one_for_commits_the_ignore_revs_file_lists
+    FixtureRepository.open do |repository|
+      repository.gemspec(license: "LGPL-3.0-or-later")
+      repository.write("lib/a.rb", "#{header("2022 #{KERRICK}", license: 'LGPL-3.0-or-later')}require_relative \"../b\"\n")
+      repository.commit(date: "2022-06-01")
+      repository.write("lib/a.rb", repository.read("lib/a.rb").sub("../b", "b"))
+      repository.commit(date: "2024-06-01", author: JANE)
+      repository.write(".git-blame-ignore-revs", "# Corrects a path\n#{repository.commit_of('HEAD')}\n")
+      repository.commit(date: "2024-06-02")
+
+      assert_empty annotate
+    end
+  end
+
   def test_skips_a_named_file_in_another_language
     in_gem("lib/a.rb" => "class A; end\n") do
       assert_empty LicensedFile.tracked(["lib/a.rb"], RustHeaderSyntax.new(licensing)).flat_map(&:annotate)

@@ -16,8 +16,13 @@ require_relative "contribution"
 # Only commit authors count. Co-Authored-By trailers credit AI tools, which
 # can't hold copyright, and people whose idea a commit took up without their
 # code; git history already credits both.
+#
+# Commits listed in .git-blame-ignore-revs count for no one, so a change too
+# small to hold copyright, such as a corrected path, adds no notice. Git reads
+# that file only when each contributor configures it, so blame names it here.
 class Blame < Data.define(:path, :contents) # :nodoc:
   UNCOMMITTED = "0" * 40
+  IGNORE_REVS = ".git-blame-ignore-revs"
 
   def initialize(path:, contents: nil)
     super
@@ -54,6 +59,7 @@ class Blame < Data.define(:path, :contents) # :nodoc:
     command = %w[git blame --porcelain]
     command += ["-L", range.join(",")] if range
     command += ["--contents", "-"] if contents
+    command += ["--ignore-revs-file", IGNORE_REVS] if File.exist?(IGNORE_REVS)
     output, status = Open3.capture2(*command, "--", path, stdin_data: contents.to_s, err: File::NULL)
     return unless status.success?
 

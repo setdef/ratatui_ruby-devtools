@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Changes too small for copyright**: The license tasks wrote a copyright notice for every commit author whose lines remained in a file, even when all they changed was a path or a typo, which no one can hold copyright in. List such commits in `.git-blame-ignore-revs`, and the license tasks blame their lines on the commits before them. Git reads that file only when each contributor configures it, so the license tasks pass it to `git blame` themselves.
+
 ### Changed
 
 ### Fixed
