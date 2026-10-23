@@ -19,8 +19,11 @@ class SnippetFile < Data.define(:path, :syntax, :author) # :nodoc:
 
   # Brings the file's snippets up to date and says what changed.
   def annotate
-    revision = SnippetRevision.new(path:, text: File.read(path), syntax:, author:).run
-    File.write(path, revision.text) if revision.changed?
+    # Binary mode keeps the file's own line endings, which text mode on
+    # Windows would turn into CRLF.
+    text = File.read(path, mode: "rb", encoding: "UTF-8")
+    revision = SnippetRevision.new(path:, text:, syntax:, author:).run
+    File.write(path, revision.text, mode: "wb") if revision.changed?
     revision.messages
   end
 end

@@ -56,11 +56,13 @@ class FixtureRepository
 
   def write(path, text)
     FileUtils.mkdir_p(File.dirname(path))
-    File.write(path, text)
+    File.write(path, text, mode: "wb")
   end
 
+  # Byte for byte, so a test sees the line endings the tasks wrote on every
+  # platform.
   def read(path)
-    File.read(path)
+    File.read(path, mode: "rb", encoding: "UTF-8")
   end
 
   def stage(path)

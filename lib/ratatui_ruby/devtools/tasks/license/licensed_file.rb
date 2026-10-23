@@ -28,10 +28,12 @@ class LicensedFile < Data.define(:path, :syntax, :author) # :nodoc:
 
   # Brings the file's header up to date and says what changed.
   def annotate
-    lines = File.read(path).lines
+    # Binary mode keeps the file's own line endings, which text mode on
+    # Windows would turn into CRLF.
+    lines = File.read(path, mode: "rb", encoding: "UTF-8").lines
     revision = HeaderRevision.new(path:, lines:, syntax:, author:)
     syntax.header_in(lines).revise(revision)
-    File.write(path, revision.text) if revision.text
+    File.write(path, revision.text, mode: "wb") if revision.text
     revision.messages
   end
 end

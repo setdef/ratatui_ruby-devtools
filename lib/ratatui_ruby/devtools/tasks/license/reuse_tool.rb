@@ -15,7 +15,8 @@ class ReuseTool # :nodoc:
     `reuse lint 2>&1`.lines.filter_map do |line|
       listed = true if line.include?("no copyright and licensing")
       listed = false if line.start_with?("# ") && !line.include?("copyright")
-      line[/^\* (.+)/, 1] if listed
+      # On Windows the tool reports paths with backslashes.
+      line[/^\* (.+)/, 1]&.tr("\\", "/") if listed
     end
   end
 

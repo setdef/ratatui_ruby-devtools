@@ -22,6 +22,12 @@ class RubyHeadersTest < DevtoolsTest
     assert_equal "#{header("2024 #{KERRICK}", license: 'LGPL-3.0-or-later')}class A; end\n", @files["lib/a.rb"]
   end
 
+  def test_keeps_the_line_endings_the_file_has
+    in_gem("lib/a.rb" => "# frozen_string_literal: true\r\n\r\nclass A\r\nend\r\n") { annotate }
+
+    assert @files["lib/a.rb"].end_with?("class A\r\nend\r\n"), @files["lib/a.rb"].inspect
+  end
+
   def test_adds_the_magic_comment_a_file_lacks
     in_gem("lib/b.rb" => "class B; end\n") { annotate }
 
