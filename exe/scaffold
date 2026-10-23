@@ -28,7 +28,7 @@
 #
 #   --author NAME     Copyright holder name (default: from git config)
 #   --email EMAIL     Copyright holder email (default: from git config)
-#   --license ID      SPDX license identifier (default: AGPL-3.0-or-later)
+#   --license ID      SPDX license identifier (default: LGPL-3.0-or-later)
 #   --dir PATH        Parent directory for new gem (default: current directory)
 #   --update          Update existing project (diff + prompt for conflicts)
 #   --force           Remove existing directory if present

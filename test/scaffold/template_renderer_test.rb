@@ -22,6 +22,13 @@ class TemplateRendererTest < DevtoolsTest
     end
   end
 
+  # The scaffold's usage text promises this default.
+  def test_licenses_the_gem_under_the_lgpl_unless_told_otherwise
+    in_scaffold do |gem|
+      assert_includes gem.read("probe_gem.gemspec"), %(spec.license = "LGPL-3.0-or-later")
+    end
+  end
+
   def test_credits_the_author_in_every_notice
     in_scaffold do |gem|
       %w[CHANGELOG.md .gitignore REUSE.toml README.md].each do |path|
