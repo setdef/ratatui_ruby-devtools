@@ -5,15 +5,15 @@
 # ratatui_ruby-devtools
 
 [![
-builds.sr.ht status](https://builds.sr.ht/~kerrick/ratatui_ruby-devtools.svg)](https://builds.sr.ht/~kerrick/ratatui_ruby-devtools?) [![
+CI](https://github.com/setdef/ratatui_ruby-devtools/actions/workflows/ci.yml/badge.svg?branch=stable)](https://github.com/setdef/ratatui_ruby-devtools/actions/workflows/ci.yml) [![
 License](https://img.shields.io/badge/License-AGPL--3.0--or--later-a2c93e)](https://spdx.org/licenses/AGPL-3.0-or-later.html) [![
 Gem Version](https://img.shields.io/gem/v/ratatui_ruby-devtools)](https://rubygems.org/gems/ratatui_ruby-devtools) [![
-Mailing List: Development](https://img.shields.io/badge/mailing_list-development-4954d5.svg?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0iaWNvbiBpY29uLXRhYmxlciBpY29ucy10YWJsZXItb3V0bGluZSBpY29uLXRhYmxlci1tYWlsIj48cGF0aCBzdHJva2U9Im5vbmUiIGQ9Ik0wIDBoMjR2MjRIMHoiIGZpbGw9Im5vbmUiLz48cGF0aCBkPSJNMyA3YTIgMiAwIDAgMSAyIC0yaDE0YTIgMiAwIDAgMSAyIDJ2MTBhMiAyIDAgMCAxIC0yIDJoLTE0YTIgMiAwIDAgMSAtMiAtMnYtMTB6IiAvPjxwYXRoIGQ9Ik0zIDdsOSA2bDkgLTYiIC8+PC9zdmc+Cg==)](https://lists.sr.ht/~kerrick/ratatui_ruby-devel)
+Issues](https://img.shields.io/github/issues/setdef/ratatui_ruby-devtools)](https://github.com/setdef/ratatui_ruby-devtools/issues)
 
 
 ## Introduction
 
-**ratatui_ruby-devtools** provides shared development tooling for the [RatatuiRuby ecosystem](https://sr.ht/~kerrick/ratatui_ruby/). It includes Rake tasks, linters, license enforcement, and build tooling used across all RatatuiRuby gems.
+**ratatui_ruby-devtools** provides shared development tooling for the [RatatuiRuby ecosystem](https://www.ratatui-ruby.dev). It includes Rake tasks, linters, license enforcement, and build tooling used across all RatatuiRuby gems.
 
 This is a **non-runtime** gem. It provides build tooling—not application features. Add it to your `:development` group only.
 
@@ -23,15 +23,15 @@ This is a **non-runtime** gem. It provides build tooling—not application featu
 
 ### The Ecosystem
 
-**RatatuiRuby:** [Core engine](https://git.sr.ht/~kerrick/ratatui_ruby) • **Tea:** [MVU architecture](https://github.com/setdef/Rooibos) • **Kit:** [Component architecture](https://git.sr.ht/~kerrick/ratatui_ruby-kit) (Planned) • **DSL:** [Glimmer syntax](https://sr.ht/~kerrick/ratatui_ruby/#chapter-4-the-syntax) (Planned) • **Framework:** [Omakase framework](https://git.sr.ht/~kerrick/ratatui_ruby-framework) (Planned) • **UI:** [Polished widgets](https://git.sr.ht/~kerrick/ratatui_ruby-ui) (Planned) • **UI Pro:** [More polished widgets](https://sr.ht/~kerrick/ratatui_ruby#chapter-6-licensing) (Planned)
+**RatatuiRuby:** [Core engine](https://github.com/setdef/RatatuiRuby) • **Rooibos:** [MVU architecture](https://www.rooibos.run) • **Kit:** [Component architecture](https://git.sr.ht/~kerrick/ratatui_ruby-kit) (Planned) • **DSL:** [Glimmer syntax](https://sr.ht/~kerrick/ratatui_ruby/#chapter-4-the-syntax) (Planned) • **Framework:** [Omakase framework](https://git.sr.ht/~kerrick/ratatui_ruby-framework) (Planned) • **UI:** [Polished widgets](https://git.sr.ht/~kerrick/ratatui_ruby-ui) (Planned) • **UI Pro:** [More polished widgets](https://sr.ht/~kerrick/ratatui_ruby#chapter-6-licensing) (Planned)
 
 ### For App Developers
 
-**Get Started:** [Quickstart](https://git.sr.ht/~kerrick/ratatui_ruby/tree/stable/item/doc/getting_started/quickstart.md) • [Examples](https://git.sr.ht/~kerrick/ratatui_ruby/tree/stable/item/examples) ⸺ **Stay Informed:** [Announce List](https://lists.sr.ht/~kerrick/ratatui_ruby-announce) • [FAQ](https://man.sr.ht/~kerrick/ratatui_ruby/troubleshooting.md) ⸺ **Reach Out:** [Discuss List](https://lists.sr.ht/~kerrick/ratatui_ruby-discuss) • [Bug Tracker](https://todo.sr.ht/~kerrick/ratatui_ruby)
+**Get Started:** [Quickstart](https://github.com/setdef/RatatuiRuby/blob/stable/doc/getting_started/quickstart.md) • [Examples](https://github.com/setdef/RatatuiRuby/blob/stable/examples/app_all_events/README.md) ⸺ **Stay Informed:** [Announcements](https://forum.setdef.com/tags/c/ratatui-ruby/6/announcement) • [FAQ](https://man.sr.ht/~kerrick/ratatui_ruby/troubleshooting.md) ⸺ **Reach Out:** [Forum](https://forum.setdef.com/c/ratatui-ruby/6) • [Bug Tracker](https://forum.setdef.com/tags/c/ratatui-ruby/6/bug)
 
 ### For Contributors
 
-**Get Started:** [Contributing Guide](https://man.sr.ht/~kerrick/ratatui_ruby/contributing.md) • [Code of Conduct](https://man.sr.ht/~kerrick/ratatui_ruby/code_of_conduct.md) ⸺ **Stay Informed:** [Announce List](https://lists.sr.ht/~kerrick/ratatui_ruby-announce) • [Project History](https://man.sr.ht/~kerrick/ratatui_ruby/history/index.md) ⸺ **Reach Out:** [Development List](https://lists.sr.ht/~kerrick/ratatui_ruby-devel) • [Bug Tracker](https://todo.sr.ht/~kerrick/ratatui_ruby)
+**Get Started:** [Contributing Guide](https://man.sr.ht/~kerrick/ratatui_ruby/contributing.md) • [Code of Conduct](https://man.sr.ht/~kerrick/ratatui_ruby/code_of_conduct.md) ⸺ **Stay Informed:** [Announcements](https://forum.setdef.com/tags/c/ratatui-ruby/6/announcement) • [Project History](https://man.sr.ht/~kerrick/ratatui_ruby/history/index.md) ⸺ **Reach Out:** [Issues](https://github.com/setdef/ratatui_ruby-devtools/issues)
 
 ---
 
@@ -230,7 +230,7 @@ RatatuiRuby::Devtools.install_gem_tasks!(
 
 ## Contributing
 
-Bug reports and pull requests are welcome on [sourcehut](https://sourcehut.org) at https://sr.ht/~kerrick/ratatui_ruby/. This project is intended to be a safe, productive collaboration, and contributors are expected to adhere to the [Code of Conduct](https://man.sr.ht/~kerrick/ratatui_ruby/code_of_conduct.md).
+Bug reports and pull requests are welcome on [GitHub](https://github.com/setdef/ratatui_ruby-devtools/issues). This project is intended to be a safe, productive collaboration, and contributors are expected to adhere to the [Code of Conduct](https://man.sr.ht/~kerrick/ratatui_ruby/code_of_conduct.md).
 
 Want to help develop **ratatui_ruby-devtools**? Check out the [contribution guide on the wiki](https://man.sr.ht/~kerrick/ratatui_ruby/contributing.md).
 

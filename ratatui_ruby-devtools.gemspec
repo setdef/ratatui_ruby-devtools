@@ -15,15 +15,16 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Development tooling for the RatatuiRuby ecosystem."
   spec.description = "Shared Rake tasks, linters, and build tooling for RatatuiRuby ecosystem gems."
-  spec.homepage = "https://sr.ht/~kerrick/ratatui_ruby/"
+  spec.homepage = "https://github.com/setdef/ratatui_ruby-devtools"
   spec.license = "AGPL-3.0-or-later"
   spec.required_ruby_version = ">= 3.3.11"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["bug_tracker_uri"] = "https://todo.sr.ht/~kerrick/ratatui_ruby"
-  spec.metadata["mailing_list_uri"] = "https://lists.sr.ht/~kerrick/ratatui_ruby-discuss"
-  spec.metadata["source_code_uri"] = "https://git.sr.ht/~kerrick/ratatui_ruby-devtools"
+  spec.metadata["bug_tracker_uri"] = "https://github.com/setdef/ratatui_ruby-devtools/issues"
+  spec.metadata["changelog_uri"] = "https://github.com/setdef/ratatui_ruby-devtools/blob/stable/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://github.com/setdef/ratatui_ruby-devtools"
+  spec.metadata["wiki_uri"] = "https://man.sr.ht/~kerrick/ratatui_ruby/"
   spec.metadata["rubygems_mfa_required"] = "true"
 
   # Specify which files should be added to the gem when it is released.
