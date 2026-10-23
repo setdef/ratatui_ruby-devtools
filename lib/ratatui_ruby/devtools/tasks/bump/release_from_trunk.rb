@@ -14,7 +14,7 @@ class ReleaseFromTrunk < BumpWorkflow
     @branch = ReleaseBranch.for_version(target)
 
     puts "Creating release branch: #{@branch.name}"
-    puts "Bumping #{@segment}: #{@gem.version} -> #{target}"
+    puts "Bumping #{@task}: #{@gem.version} -> #{target}"
 
     @repository.create_branch(@branch.name)
   end

@@ -40,10 +40,7 @@ class BumpTasks < Rake::TaskLib # :nodoc:
 
       desc "Set exact version (e.g. rake bump:exact[0.1.0])"
       task :exact, [:version] do |_, args|
-        target = SemVer.parse(args[:version])
-        changelog = Changelog.new
-        changelog.release(target)
-        @gem.update_version(target)
+        BumpWorkflow.to(@gem, SemVer.parse(args[:version]), :exact).call
       end
     end
   end

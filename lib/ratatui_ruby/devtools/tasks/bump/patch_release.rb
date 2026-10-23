@@ -12,11 +12,11 @@ class PatchRelease < BumpWorkflow
   private def assert_can_bump!
     return unless @repository.on_trunk?
 
-    raise ArgumentError, "Cannot bump:#{@segment} from trunk. Use a release branch."
+    raise ArgumentError, "Cannot bump:#{@task} from trunk. Use a release branch."
   end
 
   private def prepare
-    puts "Bumping #{@segment}: #{@gem.version} -> #{target}"
+    puts "Bumping #{@task}: #{@gem.version} -> #{target}"
   end
 
   private def finalize

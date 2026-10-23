@@ -11,7 +11,7 @@ require_relative "bump_workflow"
 # trunk and no release branch is cut.
 class UnbranchedRelease < BumpWorkflow # :nodoc:
   private def prepare
-    puts "Bumping #{@segment}: #{@gem.version} -> #{target}"
+    puts "Bumping #{@task}: #{@gem.version} -> #{target}"
   end
 
   private def finalize

@@ -11,52 +11,39 @@ require "ratatui_ruby/devtools/tasks/bump_tasks"
 require "ratatui_ruby/devtools/tasks/bump/ruby_gem"
 
 class BumpTasksTest < DevtoolsTest
-  CHANGELOG = <<~MARKDOWN
-    # Changelog
-
-    ## [Unreleased]
-
-    ### Added
-
-    - Something.
-
-    ## [1.0.0] - 2026-01-01
-
-    [Unreleased]: https://example.com/refs/HEAD
-    [1.0.0]: https://example.com/refs/tags/v1.0.0
-  MARKDOWN
-
-  # Records the versions it's bumped to instead of writing them.
-  class RecordingGem
-    attr_reader :versions
-
-    def initialize
-      @versions = []
-    end
-
-    def update_version(target)
-      @versions << target.to_s
-    end
-  end
-
   def test_defines_a_bump_for_each_segment_and_an_exact_one
     with_rake do
-      BumpTasks.new(RecordingGem.new)
+      BumpTasks.new(Object.new)
 
       assert_equal %w[bump:exact bump:major bump:minor bump:patch], Rake::Task.tasks.map(&:name).sort
     end
   end
 
-  def test_bumps_the_gem_it_was_given_to_an_exact_version
-    with_rake do
-      File.write("CHANGELOG.md", CHANGELOG)
-      gem = RecordingGem.new
-      BumpTasks.new(gem)
+  def test_releases_an_exact_version_through_the_same_workflow
+    in_bumped_repository("1.0.0") do |repository|
+      capture_subprocess_io { Rake::Task["bump:exact"].invoke("1.1.0") }
 
-      Rake::Task["bump:exact"].invoke("1.1.0")
+      assert_equal %(VERSION = "1.1.0"\n), repository.file_on("release/1.1", "lib/fixture/version.rb")
+      assert_equal %(VERSION = "1.1.0"\n), repository.file_on("trunk", "lib/fixture/version.rb")
+    end
+  end
 
-      assert_equal ["1.1.0"], gem.versions
-      assert_includes File.read("CHANGELOG.md"), "## [1.1.0] - "
+  def test_releases_an_exact_prerelease_on_trunk
+    in_bumped_repository("1.0.0") do |repository|
+      capture_subprocess_io { Rake::Task["bump:exact"].invoke("1.1.0-beta.1") }
+
+      assert_equal %(VERSION = "1.1.0-beta.1"\n), repository.file_on("trunk", "lib/fixture/version.rb")
+      assert_equal %w[trunk], repository.branches
+    end
+  end
+
+  def test_refuses_an_exact_version_with_uncommitted_changes
+    in_bumped_repository("1.0.0") do |repository|
+      repository.write("notes.txt", "Unsaved.\n")
+
+      error = assert_raises(ArgumentError) { Rake::Task["bump:exact"].invoke("1.1.0") }
+
+      assert_equal "Working tree is not clean. Commit or stash changes first.", error.message
     end
   end
 
