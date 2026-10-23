@@ -100,9 +100,10 @@ class ScaffoldConfig
     Time.now.year
   end
 
-  # Ruby versions to test in CI.
+  # Ruby versions to test in CI. Each names a minor version, so CI tests its
+  # newest patch release.
   def ruby_versions
-    %w[3.3 3.4 4.0.2]
+    %w[3.3 3.4 4.0]
   end
 end
 

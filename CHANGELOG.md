@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Scaffolded CI on Ruby 4.0**: The scaffold pinned your CI's newest Ruby to one patch release, so CI never tested a later 4.0.x. It now names 4.0, which CI resolves to the newest 4.0 patch release, as it already did for 3.3 and 3.4. Run `scaffold --update` to pick it up.
 - **Version links on GitHub**: `rake bump:*` only understood SourceHut's changelog links, so a gem on GitHub got no link for each new version, and nothing said so. On GitHub, the Unreleased link now browses `HEAD`, and the new version links to its release. A link into any other forge now gets a warning. The scaffolded `CHANGELOG.md` starts with an Unreleased link to your GitHub repository, so your first bump links your first release. Versions bumped before this have no link; add theirs by hand.
 - **Scaffolded copyright notices**: The scaffold credited Kerrick Long, not you, in the SPDX headers of `CHANGELOG.md` and `.gitignore` and in the `REUSE.toml` annotation for `doc/images/`. It now credits you, as it does everywhere else. Run `scaffold --update` to fix `.gitignore` and `REUSE.toml`, and fix `CHANGELOG.md` by hand, since the update leaves it alone.
 - **First bump of a scaffolded gem**: The scaffold's `CHANGELOG.md` has nothing released yet and no version links, so every `rake bump:*` stopped with `Could not parse CHANGELOG.md`. Bumps now release into a changelog without either. Every bump also dropped the changelog's final newline, and now keeps it.
