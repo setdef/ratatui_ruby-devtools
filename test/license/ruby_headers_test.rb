@@ -86,6 +86,55 @@ class RubyHeadersTest < DevtoolsTest
     assert_equal "#{header("2024 #{KERRICK}", license: 'LGPL-3.0-or-later')}class I; end\n", @files["lib/i.rb"]
   end
 
+  # Ruby reads a shebang only on the first line and magic comments only above
+  # the code, and any other comment above a header belongs to the file.
+  def test_keeps_what_a_file_opens_with_above_its_header
+    block = "#--\n# SPDX-FileCopyrightText: 2024 #{KERRICK}\n# SPDX-License-Identifier: LGPL-3.0-or-later\n#++\n"
+    old = "#--\n# SPDX-FileCopyrightText: 2024 #{KERRICK}\n# SPDX-License-Identifier: MIT\n#++\n"
+    {
+      "a linter directive" => [
+        "# frozen_string_literal: true\n# rubocop:disable all\n\n#{old}\nclass A; end\n",
+        "# frozen_string_literal: true\n# rubocop:disable all\n\n#{block}\nclass A; end\n",
+      ],
+      "a shebang" => [
+        "#!/usr/bin/env ruby\n# frozen_string_literal: true\n\n#{old}\nputs 1\n",
+        "#!/usr/bin/env ruby\n# frozen_string_literal: true\n\n#{block}\nputs 1\n",
+      ],
+      "a shebang without the magic comment" => [
+        "#!/usr/bin/env ruby\n\n#{old}\nputs 1\n",
+        "#!/usr/bin/env ruby\n# frozen_string_literal: true\n\n#{block}\nputs 1\n",
+      ],
+      "a shebang and no header" => [
+        "#!/usr/bin/env ruby\nputs 1\n",
+        "#!/usr/bin/env ruby\n# frozen_string_literal: true\n\n#{block}\nputs 1\n",
+      ],
+      "two magic comments and no header" => [
+        "# encoding: utf-8\n# frozen_string_literal: true\nputs 1\n",
+        "# encoding: utf-8\n# frozen_string_literal: true\n\n#{block}\nputs 1\n",
+      ],
+      "an encoding comment without the magic comment" => [
+        "# encoding: utf-8\n\n#{old}\nputs 1\n",
+        "# encoding: utf-8\n# frozen_string_literal: true\n\n#{block}\nputs 1\n",
+      ],
+      "a shebang, an Emacs encoding comment, and no header" => [
+        "#!/usr/bin/env ruby\n# -*- coding: utf-8 -*-\nputs 1\n",
+        "#!/usr/bin/env ruby\n# -*- coding: utf-8 -*-\n# frozen_string_literal: true\n\n#{block}\nputs 1\n",
+      ],
+      "a Vim encoding comment and no header" => [
+        "# vim: set fileencoding=utf-8 :\nputs 1\n",
+        "# vim: set fileencoding=utf-8 :\n# frozen_string_literal: true\n\n#{block}\nputs 1\n",
+      ],
+      "the other magic comments and no header" => [
+        "# frozen_string_literal: true\n# warn_indent: true\n# shareable_constant_value: literal\nputs 1\n",
+        "# frozen_string_literal: true\n# warn_indent: true\n# shareable_constant_value: literal\n\n#{block}\nputs 1\n",
+      ],
+    }.each do |opening, (text, expected)|
+      in_gem("lib/a.rb" => text) { annotate }
+
+      assert_equal expected, @files["lib/a.rb"], opening
+    end
+  end
+
   def test_credits_the_runner_for_a_file_with_no_lines
     in_gem("lib/empty.rb" => "") { annotate }
 

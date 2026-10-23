@@ -25,7 +25,9 @@ class RbsHeaderSyntax # :nodoc:
     "#{block(header)}\n#{lines.drop_while { |line| line.strip.empty? }.join}"
   end
 
+  # A magic comment means nothing in RBS.
   def replaced(header, lines, end_line)
-    "#{block(header)}\n#{after_header(lines, end_line).join}"
+    opening = preamble(lines, end_line).reject { |line| line.include?("frozen_string_literal") }
+    "#{opening.join}#{"\n" if opening.any?}#{block(header)}\n#{after_header(lines, end_line).join}"
   end
 end

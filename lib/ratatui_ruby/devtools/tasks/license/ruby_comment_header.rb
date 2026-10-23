@@ -46,4 +46,12 @@ module RubyCommentHeader # :nodoc:
   private def block(header)
     "#--\n#{header.commented('#')}#++\n"
   end
+
+  # The file's own lines among the header's, such as a shebang or a linter
+  # directive, which stay above the new header.
+  private def preamble(lines, end_line)
+    lines.take(end_line + 1).reject do |line|
+      line.match?(COPYRIGHT) || line.match?(LICENSE) || line.match?(/^#(--|\+\+)?\s*$/) || line.strip.empty?
+    end
+  end
 end

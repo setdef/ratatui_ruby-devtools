@@ -54,6 +54,15 @@ class RustHeaderSyntax # :nodoc:
   end
 
   def replaced(header, lines, end_line)
-    "#{header.commented('//')}\n#{after_header(lines, end_line).join}"
+    opening = preamble(lines, end_line)
+    "#{opening.join}#{"\n" if opening.any?}#{header.commented('//')}\n#{after_header(lines, end_line).join}"
+  end
+
+  # The file's own comments among the header's, which stay above the new
+  # header.
+  private def preamble(lines, end_line)
+    lines.take(end_line + 1).reject do |line|
+      line.match?(COPYRIGHT) || line.match?(LICENSE) || line.match?(%r{^//\s*$}) || line.strip.empty?
+    end
   end
 end

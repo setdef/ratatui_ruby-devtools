@@ -13,6 +13,10 @@ class RubyHeaderSyntax # :nodoc:
   include RubyCommentHeader
 
   FROZEN_STRING_LITERAL = "# frozen_string_literal: true\n"
+  # Ruby finds an encoding wherever "coding" meets a colon or equals sign, as
+  # in Emacs and Vim modelines.
+  ENCODING_COMMENT = /\A#.*coding[:=]/
+  MAGIC_COMMENT = /\A#.*(coding[:=]|\b(frozen_string_literal|warn_indent|shareable_constant_value)\s*:)/
 
   def extensions
     %w[rb]
@@ -23,17 +27,21 @@ class RubyHeaderSyntax # :nodoc:
   end
 
   def added(header, lines)
-    frozen = frozen_string_literal_in(lines)
-    body = (frozen ? lines.drop(1) : lines).drop_while { |line| line.strip.empty? }
-    "#{frozen || FROZEN_STRING_LITERAL}\n#{block(header)}\n#{body.join}"
+    opening = lines.take_while { |line| line.start_with?("#!") || line.match?(MAGIC_COMMENT) }
+    body = lines.drop(opening.length).drop_while { |line| line.strip.empty? }
+    "#{frozen(opening).join}\n#{block(header)}\n#{body.join}"
   end
 
   def replaced(header, lines, end_line)
-    frozen = frozen_string_literal_in(lines)
-    "#{frozen || FROZEN_STRING_LITERAL}\n#{block(header)}\n#{after_header(lines, end_line).join}"
+    "#{frozen(preamble(lines, end_line)).join}\n#{block(header)}\n#{after_header(lines, end_line).join}"
   end
 
-  private def frozen_string_literal_in(lines)
-    lines.first if lines.first&.include?("frozen_string_literal")
+  # Ruby reads a shebang only on the first line, and an encoding comment only
+  # on the first line or right after a shebang.
+  private def frozen(opening)
+    return opening if opening.any? { |line| line.include?("frozen_string_literal") }
+
+    first_lines = opening.take_while { |line| line.start_with?("#!") || line.match?(ENCODING_COMMENT) }
+    opening.dup.insert(first_lines.length, FROZEN_STRING_LITERAL)
   end
 end

@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **License headers deleted lines above them**: When the license tasks rewrote a header, they deleted every line above it except `# frozen_string_literal: true`, such as a `# rubocop:disable` directive or a Rust `//!` comment. A Ruby script that opened with a shebang lost it, and one without a header got its new header above the shebang, so the script no longer ran. A file that opened with an encoding comment got `# frozen_string_literal: true` above it, and Ruby ignores an encoding comment below that line. Those lines now stay above the header, with the shebang first and the encoding comment right after it.
+
 ### Removed
 
 ## [0.3.0] - 2026-10-22
